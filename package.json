@@ -37,7 +37,7 @@
     "react",
     "pivottable"
   ],
-  "author": "(Origial) Nicolas Kruchten <nicolas@kruchten.com> (Modified) Yuyao Zhong <yz3618@columbia.edu>",
+  "author": "Yuyao Zhong <yz3618@columbia.edu>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/plotly/react-pivottable/issues"
