@@ -44,6 +44,13 @@ export default class App extends React.Component {
             filename: 'Sample Dataset: Tips',
             pivotState: {
                 data: tips,
+                // Added attributes
+                attrClassified: true,
+                attrDict:{
+                    "Payer": ['Payer Gender','Payer Smoker'],
+                    "Money": ['Tip', 'Total Bill'],
+                    // "Others": ['Day of Week','Meal','Party Size']
+                },
                 rows: ['Payer Gender'],
                 cols: ['Party Size'],
                 aggregatorName: 'Sum over Sum',

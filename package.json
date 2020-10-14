@@ -1,7 +1,7 @@
 {
-  "name": "react-pivottable",
-  "version": "0.10.0",
-  "description": "A React-based pivot table",
+  "name": "react-pivottable-custom",
+  "version": "0.0.2",
+  "description": "A  modified version of pivot table based on react-pivottable",
   "main": "PivotTableUI.js",
   "files": [
     "PivotTable.js",
@@ -31,13 +31,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/plotly/react-pivottable.git"
+    "url": "git+https://github.com/YuyaoZhong/react-pivottable.git"
   },
   "keywords": [
     "react",
     "pivottable"
   ],
-  "author": "Nicolas Kruchten <nicolas@kruchten.com>",
+  "author": "(Origial) Nicolas Kruchten <nicolas@kruchten.com> (Modified) Yuyao Zhong <yz3618@columbia.edu>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/plotly/react-pivottable/issues"
