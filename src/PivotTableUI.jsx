@@ -231,7 +231,8 @@ class PivotTableUI extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      unusedOrder: [],
+      unusedOrder: this.props.attrOrder,
+      classifiedUnusedOrder: {},
       zIndices: {},
       maxZIndex: 1000,
       openDropdown: false,
@@ -339,19 +340,29 @@ class PivotTableUI extends React.PureComponent {
     return this.state.openDropdown === dropdown;
   }
 
-  makeClassifiedDnDCell(items, onChange, classes) {
+  makeClassifiedDnDCell(items, classes) {
+    const onChangeAttr = (attrClass) => (
+      order => {
+        let newOrders = Object.assign({}, this.state.classifiedUnusedOrder);
+        newOrders[attrClass] = order
+        this.setState({classifiedUnusedOrder: newOrders})
+      }
+    );
+
     let itemClassfiedDict = {}
-    const findAttr = (x) => (items.findIndex(y=>y.toLowerCase() === x.toLowerCase())!==-1);
+    const findAttr = (x) => (items.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
     for (var [attrClass, attrs] of Object.entries(this.props.attrDict)){
-      const new_attrs = attrs.filter(findAttr);
+      const new_attrs = attrs.filter(findAttr).sort(sortAs(this.state.classifiedUnusedOrder[attrClass] || this.props.attrOrder));
       if(new_attrs.length > 0){
         itemClassfiedDict[attrClass] = new_attrs
       }
       items = items.filter(x=>(new_attrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1));
     }
     if(items.length > 0){
-      itemClassfiedDict.Unclassfied = items;
+      const unclassifiedName = this.props.unclassifiedAttrName || "Unclassified"
+      itemClassfiedDict[unclassifiedName] = items.sort(sortAs(this.state.classifiedUnusedOrder[unclassifiedName] || this.props.attrOrder));
     }
+
     return (
       <td className={classes + " pvtCategoryArea"}>
         <table>
@@ -369,7 +380,7 @@ class PivotTableUI extends React.PureComponent {
                 }}
               tag="td"
               className={classes}
-              onChange={onChange}
+              onChange={onChangeAttr(attrClass)}
             >
          <h5>{attrClass}</h5>
         {itemClassfiedDict[attrClass].map(x => (
@@ -543,17 +554,8 @@ class PivotTableUI extends React.PureComponent {
     const unusedLength = unusedAttrs.reduce((r, e) => r + e.length, 0);
     const horizUnused = unusedLength < this.props.unusedOrientationCutoff;
 
-    // const unusedAttrsCell = this.makeDnDCell(
-    //   unusedAttrs,
-    //   order => this.setState({unusedOrder: order}),
-    //   `pvtAxisContainer pvtUnused ${
-    //     horizUnused ? 'pvtHorizList' : 'pvtVertList'
-    //   }`
-    // );
-
     const unusedAttrsCell = this.props.attrClassified? 
     this.makeClassifiedDnDCell(unusedAttrs,
-      order => this.setState({unusedOrder: order}),
       `pvtAxisContainer pvtUnused ${
         horizUnused ? 'pvtHorizList' : 'pvtVertList'
       }`):
@@ -645,11 +647,6 @@ PivotTableUI.propTypes = Object.assign({}, PivotTable.propTypes, {
   hiddenFromDragDrop: PropTypes.arrayOf(PropTypes.string),
   unusedOrientationCutoff: PropTypes.number,
   menuLimit: PropTypes.number,
-  // attrClassified: PropTypes.bool,
-  // attrDict: PropTypes.shape({
-  //   name: PropTypes.string,
-  //   attrs: PropTypes.arrayOf(PropTypes.string)
-  // })
 });
 
 PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
@@ -657,10 +654,7 @@ PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
   hiddenFromAggregators: [],
   hiddenFromDragDrop: [],
   unusedOrientationCutoff: 85,
-  menuLimit: 500,
-  // attrClassified: false,
-  // attrDict: {},
-  
+  menuLimit: 500,  
 });
 
 export default PivotTableUI;

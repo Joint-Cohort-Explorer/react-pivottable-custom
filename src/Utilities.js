@@ -776,6 +776,8 @@ PivotData.defaultProps = {
   aggregators: aggregators,
   attrClassified: false,
   attrDict: {},
+  attrOrder: [],
+  unclassifiedAttrName: "Unclassified",
   cols: [],
   rows: [],
   vals: [],
@@ -791,7 +793,9 @@ PivotData.propTypes = {
   data: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.func])
     .isRequired,
   attrClassified: PropTypes.bool,
+  unclassifiedAttrName: PropTypes.string,
   attrDict: PropTypes.object,
+  attrOrder: PropTypes.arrayOf(PropTypes.string),
   aggregatorName: PropTypes.string,
   cols: PropTypes.arrayOf(PropTypes.string),
   rows: PropTypes.arrayOf(PropTypes.string),

@@ -51,6 +51,8 @@ export default class App extends React.Component {
                     "Money": ['Tip', 'Total Bill'],
                     // "Others": ['Day of Week','Meal','Party Size']
                 },
+                unclassifiedAttrName: "Others",
+                attrOrder: ["Meal", "Day of Week",  "Party Size", "Total Bill", "Tip",  "Payer Smoker", "Payer Gender"],
                 rows: ['Payer Gender'],
                 cols: ['Party Size'],
                 aggregatorName: 'Sum over Sum',
