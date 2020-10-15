@@ -1,7 +1,7 @@
 {
   "name": "react-pivottable-custom",
-  "version": "0.0.4",
-  "description": "A  tested and modified version of pivot table based on react-pivottable",
+  "version": "0.0.5",
+  "description": "A modified version of pivot table based on react-pivottable for demo and test",
   "main": "PivotTableUI.js",
   "files": [
     "PivotTable.js",
