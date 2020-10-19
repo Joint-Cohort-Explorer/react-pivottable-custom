@@ -46,13 +46,38 @@ export default class App extends React.Component {
                 data: tips,
                 // Added attributes
                 attrClassified: true,
-                attrDict:{
-                    "Payer": ['Payer Gender','Payer Smoker'],
-                    "Money": ['Tip', 'Total Bill'],
-                    // "Others": ['Day of Week','Meal','Party Size']
-                },
+                attrCategory:[
+                    {
+                        name: "Payer",
+                        // attributes: ['Payer Gender'],
+                        subcategory: [
+                            {
+                                name: "Test1",
+                                attributes: ['Payer Smoker']
+                            },
+                            {
+                                name: "Test2",
+                                attributes:  ['Payer Gender']
+                            }
+                        ]
+                    },
+                    {
+                        name: "Money",
+                        attributes:  ['Tip', 'Total Bill'],
+                    },
+                    {
+                        name: "Others",
+                        attributes: ['Day of Week','Meal','Party Size']
+                    }
+                ],
+                // attrDict:{
+                //     "Payer": ['Payer Gender','Payer Smoker'],
+                //     "Money": ['Tip', 'Total Bill'],
+                //     // "Others": ['Day of Week','Meal','Party Size']
+                // },
                 unclassifiedAttrName: "Others",
                 attrOrder: ["Meal", "Day of Week",  "Party Size", "Total Bill", "Tip",  "Payer Smoker", "Payer Gender"],
+                // Orignial
                 rows: ['Payer Gender'],
                 cols: ['Party Size'],
                 aggregatorName: 'Sum over Sum',

@@ -339,6 +339,9 @@ class PivotTableUI extends React.PureComponent {
   isOpen(dropdown) {
     return this.state.openDropdown === dropdown;
   }
+  
+
+
 
   makeClassifiedDnDCell(items, classes) {
     const onChangeAttr = (attrClass) => (
@@ -349,18 +352,71 @@ class PivotTableUI extends React.PureComponent {
       }
     );
 
-    let itemClassfiedDict = {}
+  
     const findAttr = (x) => (items.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-    for (var [attrClass, attrs] of Object.entries(this.props.attrDict)){
-      const new_attrs = attrs.filter(findAttr).sort(sortAs(this.state.classifiedUnusedOrder[attrClass] || this.props.attrOrder));
-      if(new_attrs.length > 0){
-        itemClassfiedDict[attrClass] = new_attrs
-      }
-      items = items.filter(x=>(new_attrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1));
+    const makeSortableCells = (attrDict, showName, classes) =>{
+        const name = attrDict.name;
+        const new_attrs = attrDict.attributes.filter(findAttr).sort(sortAs(this.state.classifiedUnusedOrder[name] || this.props.attrOrder));
+
+        return(<Sortable
+          key = {name}
+          options={{
+            group: 'shared',
+            ghostClass: 'pvtPlaceholder',
+            filter: '.pvtFilterBox',
+            preventOnFilter: false,
+          }}
+        tag="td"
+        className={classes}
+        onChange={onChangeAttr(name)}
+      >
+       {
+         showName?  <h5>{name}</h5>: ""
+       }
+        {new_attrs.map(x => (
+                  <DraggableAttribute
+                    name={x}
+                    key={x}
+                    attrValues={this.state.attrValues[x]}
+                    valueFilter={this.props.valueFilter[x] || {}}
+                    sorter={getSort(this.props.sorters, x)}
+                    menuLimit={this.props.menuLimit}
+                    setValuesInFilter={this.setValuesInFilter.bind(this)}
+                    addValuesToFilter={this.addValuesToFilter.bind(this)}
+                    moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
+                    removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
+                    zIndex={this.state.zIndices[x] || this.state.maxZIndex}
+                  />
+                ))}
+              </Sortable>
+            )
     }
-    if(items.length > 0){
-      const unclassifiedName = this.props.unclassifiedAttrName || "Unclassified"
-      itemClassfiedDict[unclassifiedName] = items.sort(sortAs(this.state.classifiedUnusedOrder[unclassifiedName] || this.props.attrOrder));
+  
+
+    const getNodes = (attrDictList, level) => {
+      return attrDictList.map((attrDict)=>{
+        if(attrDict.subcategory){
+          return (<td className={classes + " pvtCategoryArea"} key={level + 1}>
+                <h5>{attrDict.name}</h5>
+                <table>
+                  <tbody>
+                    <tr>
+                    {
+                      attrDict.attributes && attrDict.attributes.length > 0 ? makeSortableCells(attrDict, false, "") : ""
+
+                    }
+                    </tr>
+                    <tr>
+                {getNodes(attrDict.subcategory, level + 1)}
+                </tr>
+              </tbody>
+          </table>
+      </td>)
+        } 
+       
+        return makeSortableCells(attrDict, true, classes);
+        
+      })
     }
 
     return (
@@ -368,46 +424,86 @@ class PivotTableUI extends React.PureComponent {
         <table>
           <tbody>
             <tr>
-         {
-           Object.keys(itemClassfiedDict).map(attrClass=>(
-            <Sortable
-                key = {attrClass}
-                options={{
-                  group: 'shared',
-                  ghostClass: 'pvtPlaceholder',
-                  filter: '.pvtFilterBox',
-                  preventOnFilter: false,
-                }}
-              tag="td"
-              className={classes}
-              onChange={onChangeAttr(attrClass)}
-            >
-         <h5>{attrClass}</h5>
-        {itemClassfiedDict[attrClass].map(x => (
-          <DraggableAttribute
-            name={x}
-            key={x}
-            attrValues={this.state.attrValues[x]}
-            valueFilter={this.props.valueFilter[x] || {}}
-            sorter={getSort(this.props.sorters, x)}
-            menuLimit={this.props.menuLimit}
-            setValuesInFilter={this.setValuesInFilter.bind(this)}
-            addValuesToFilter={this.addValuesToFilter.bind(this)}
-            moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
-            removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
-            zIndex={this.state.zIndices[x] || this.state.maxZIndex}
-          />
-        ))}
-      </Sortable>
-     
-        ))
-      }
+              {
+                getNodes(this.props.attrCategory, 0)
+              }
          </tr>
         </tbody>
       </table>
       </td>
     );
   }
+
+
+  
+  // makeClassifiedDnDCell(items, classes) {
+  //   const onChangeAttr = (attrClass) => (
+  //     order => {
+  //       let newOrders = Object.assign({}, this.state.classifiedUnusedOrder);
+  //       newOrders[attrClass] = order
+  //       this.setState({classifiedUnusedOrder: newOrders})
+  //     }
+  //   );
+
+  //   let itemClassfiedDict = {}
+  //   const findAttr = (x) => (items.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
+  //   for (var [attrClass, attrs] of Object.entries(this.props.attrDict)){
+  //     const new_attrs = attrs.filter(findAttr).sort(sortAs(this.state.classifiedUnusedOrder[attrClass] || this.props.attrOrder));
+  //     if(new_attrs.length > 0){
+  //       itemClassfiedDict[attrClass] = new_attrs
+  //     }
+  //     items = items.filter(x=>(new_attrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1));
+  //   }
+  //   if(items.length > 0){
+  //     const unclassifiedName = this.props.unclassifiedAttrName || "Unclassified"
+  //     itemClassfiedDict[unclassifiedName] = items.sort(sortAs(this.state.classifiedUnusedOrder[unclassifiedName] || this.props.attrOrder));
+  //   }
+
+  //   return (
+  //     <td className={classes + " pvtCategoryArea"}>
+  //       <table>
+  //         <tbody>
+  //           <tr>
+  //        {
+  //          Object.keys(itemClassfiedDict).map(attrClass=>(
+  //           <Sortable
+  //               key = {attrClass}
+  //               options={{
+  //                 group: 'shared',
+  //                 ghostClass: 'pvtPlaceholder',
+  //                 filter: '.pvtFilterBox',
+  //                 preventOnFilter: false,
+  //               }}
+  //             tag="td"
+  //             className={classes}
+  //             onChange={onChangeAttr(attrClass)}
+  //           >
+  //        <h5>{attrClass}</h5>
+  //       {itemClassfiedDict[attrClass].map(x => (
+  //         <DraggableAttribute
+  //           name={x}
+  //           key={x}
+  //           attrValues={this.state.attrValues[x]}
+  //           valueFilter={this.props.valueFilter[x] || {}}
+  //           sorter={getSort(this.props.sorters, x)}
+  //           menuLimit={this.props.menuLimit}
+  //           setValuesInFilter={this.setValuesInFilter.bind(this)}
+  //           addValuesToFilter={this.addValuesToFilter.bind(this)}
+  //           moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
+  //           removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
+  //           zIndex={this.state.zIndices[x] || this.state.maxZIndex}
+  //         />
+  //       ))}
+  //     </Sortable>
+     
+  //       ))
+  //     }
+  //        </tr>
+  //       </tbody>
+  //     </table>
+  //     </td>
+  //   );
+  // }
 
   makeDnDCell(items, onChange, classes) {
     return (
@@ -440,6 +536,8 @@ class PivotTableUI extends React.PureComponent {
       </Sortable>
     );
   }
+
+  
 
   render() {
     const numValsAllowed =
