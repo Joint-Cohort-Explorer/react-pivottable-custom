@@ -49,16 +49,16 @@ export default class App extends React.Component {
                 attrCategory:[
                     {
                         name: "Payer",
-                        // attributes: ['Payer Gender'],
+                        attributes: ['Payer Gender'],
                         subcategory: [
                             {
                                 name: "Test1",
                                 attributes: ['Payer Smoker']
                             },
-                            {
-                                name: "Test2",
-                                attributes:  ['Payer Gender']
-                            }
+                            // {
+                            //     name: "Test2",
+                            //     attributes:  ['Payer Gender']
+                            // }
                         ]
                     },
                     {
