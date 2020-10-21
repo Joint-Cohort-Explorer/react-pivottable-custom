@@ -49,11 +49,17 @@ export default class App extends React.Component {
                 attrCategory:[
                     {
                         name: "Payer",
-                        attributes: ['Payer Gender'],
+                        // attributes: ['Payer Gender'],
                         subcategory: [
                             {
                                 name: "Test1",
-                                attributes: ['Payer Smoker']
+                                attributes: ['Payer Smoker'],
+                                subcategory: [
+                                    {
+                                        name: "Test2",
+                                        attributes:  ['Payer Gender']
+                                }
+                                ]
                             },
                             // {
                             //     name: "Test2",
@@ -67,7 +73,22 @@ export default class App extends React.Component {
                     },
                     {
                         name: "Others",
-                        attributes: ['Day of Week','Meal','Party Size']
+                        // attributes: ['Day of Week','Meal','Party Size'],
+                        subcategory:[
+                            {
+                                name: "Test1",
+                                attributes: ['Meal'],
+                                subcategory: [
+                                    {
+                                        name: "Test2",
+                                        attributes:  ['Day of Week']
+                                },{
+                                    name: "Test3",
+                                    attributes: ['Party Size']
+                                }
+                                ]
+                            },
+                        ]
                     }
                 ],
                 // attrDict:{

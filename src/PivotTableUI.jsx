@@ -227,11 +227,13 @@ export class Dropdown extends React.PureComponent {
   }
 }
 
+
 export class AttributesArea extends React.Component {
   constructor(props) {
      super(props);
      this.state = {
-       attrOrder: this.props.attrOrder
+       attrOrder: this.props.attrOrder,
+       hideSubComponents: {},
      };
   }
 
@@ -239,13 +241,13 @@ export class AttributesArea extends React.Component {
     this.setState({attrOrder: items});
   }
 
-  render() {
+  makeCateogryDnDCell(attrDict, showName, level, classes){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-    const name = this.props.attrDict.name;
-    const new_attrs = this.props.attrDict.attributes.filter(findAttr).sort(sortAs(this.state.attrOrder));
-
-    return(<Sortable
-      key = {name}
+    const name = attrDict.name;
+    const new_attrs = attrDict.attributes && attrDict.attributes.length > 0 ?
+                     attrDict.attributes.filter(findAttr).sort(sortAs(this.state.attrOrder)) : [];
+    return (<Sortable
+      key = {`${level}-${attrDict.name}`}
       options={{
         group: 'shared',
         ghostClass: 'pvtPlaceholder',
@@ -253,13 +255,11 @@ export class AttributesArea extends React.Component {
         preventOnFilter: false,
       }}
     tag="td"
-    className={this.props.classes}
+    className={classes}
     onChange={this.onChange.bind(this)}
   >
-   {
-     this.props.showName?  <h5>{name}</h5>: <span></span>
-   }
-    {new_attrs.map(x => (
+    {name && showName?  <h4>{name}</h4>: <span></span>}
+    {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
               <DraggableAttribute
                 name={x}
                 key = {x}
@@ -273,11 +273,119 @@ export class AttributesArea extends React.Component {
                 removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                 zIndex={this.props.zIndices[x] || this.props.maxZIndex}
               />
-            ))}
-          </Sortable>
+            )):<span></span>}
+          </Sortable>)
+    
+      }
+
+  renderList(attrList, level) {
+    return attrList.map(attrDict=>{
+      if(attrDict.subcategory){
+        const key = `${level}-${attrDict.name}`;
+        return (<td className={this.props.classes + " pvtSubCategoryArea"} key={key}>
+      
+              {/* <h4 onClick={()=>{
+                  const key = `${level}-${attrDict.name}`;
+                let hideState = Object.assign({}, this.state.hideSubComponents);
+                if(! key in  hideState ){
+                  hideState[key] = true
+                } else {
+                  hideState[key] = !hideState[key]
+                }
+                this.setState({hideSubComponents:hideState})
+
+              }}>{attrDict.name}</h4> */}
+             {
+               this.state.hideSubComponents[key]?"":
+               <table>
+               <tbody>
+                 <tr>
+                 {
+                    this.makeCateogryDnDCell(attrDict, true, level,  "pvtParentAttrArea")
+
+                 }
+                 </tr>
+                 <tr>
+             {this.renderList(attrDict.subcategory, level + 1)}
+             </tr>
+           </tbody>
+       </table>
+             }
+      </td>)
+      }
+      return this.makeCateogryDnDCell(attrDict, true, level, this.props.classes)
+    })
+  }
+
+  render() {
+    
+      return(    <td className={this.props.classes + " pvtCategoryArea"}>
+            <table>
+              <tbody>
+                <tr>
+                {
+                  this.renderList(this.props.attrList, 1)
+                }
+            </tr>
+            </tbody>
+          </table>
+          </td>
         )
   }
+
 }
+
+// export class AttributesArea extends React.Component {
+//   constructor(props) {
+//      super(props);
+//      this.state = {
+//        attrOrder: this.props.attrOrder
+//      };
+//   }
+
+//   onChange(items){
+//     this.setState({attrOrder: items});
+//   }
+
+//   render() {
+//     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
+//     const name = this.props.attrDict.name;
+//     const new_attrs = this.props.attrDict.attributes.filter(findAttr).sort(sortAs(this.state.attrOrder));
+
+//     return(<Sortable
+//       key = {name}
+//       options={{
+//         group: 'shared',
+//         ghostClass: 'pvtPlaceholder',
+//         filter: '.pvtFilterBox',
+//         preventOnFilter: false,
+//       }}
+//     tag="td"
+//     className={this.props.classes}
+//     onChange={this.onChange.bind(this)}
+//   >
+//    {
+//      this.props.showName?  <h4>{name}</h4>: <span></span>
+//    }
+//     {new_attrs.map(x => (
+//               <DraggableAttribute
+//                 name={x}
+//                 key = {x}
+//                 attrValues={this.props.attrValues[x]}
+//                 valueFilter={this.props.valueFilter[x] || {}}
+//                 sorter={getSort(this.props.sorters, x)}
+//                 menuLimit={this.props.menuLimit}
+//                 setValuesInFilter={this.props.setValuesInFilter.bind(this)}
+//                 addValuesToFilter={this.props.addValuesToFilter.bind(this)}
+//                 moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
+//                 removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
+//                 zIndex={this.props.zIndices[x] || this.props.maxZIndex}
+//               />
+//             ))}
+//           </Sortable>
+//         )
+//   }
+// }
 
 class PivotTableUI extends React.PureComponent {
   constructor(props) {
@@ -395,67 +503,25 @@ class PivotTableUI extends React.PureComponent {
 
 
   makeClassifiedDnDCell(items, classes) {
-    const makeSortableCells = (attrDict, showName, level, classes) =>{
-       return(<AttributesArea
-            key = {`${level}-${attrDict.name}`}
-            attrDict = {attrDict}
-            showName = {showName}
-            classes = {classes}
-            allAttributes = {items}
-            attrOrder = {this.props.attrOrder}
-            attrValues={this.state.attrValues}
-            valueFilter={this.props.valueFilter || {}}
-            sorter={this.props.sorters}
-            menuLimit={this.props.menuLimit}
-            setValuesInFilter={this.setValuesInFilter.bind(this)}
-            addValuesToFilter={this.addValuesToFilter.bind(this)}
-            moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
-            removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
-            zIndices = {this.state.zIndices}
-            maxZIndex = {this.state.maxZIndex} 
-        />)
-    }
+      return ( <AttributesArea
+        // key = {`${level}-${attrDict.name}`}
+        attrList = {this.props.attrCategory}
+        showName = {true}
+        classes = {classes}
+        allAttributes = {items}
+        attrOrder = {this.props.attrOrder}
+        attrValues={this.state.attrValues}
+        valueFilter={this.props.valueFilter || {}}
+        sorter={this.props.sorters}
+        menuLimit={this.props.menuLimit}
+        setValuesInFilter={this.setValuesInFilter.bind(this)}
+        addValuesToFilter={this.addValuesToFilter.bind(this)}
+        moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
+        removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
+        zIndices = {this.state.zIndices}
+        maxZIndex = {this.state.maxZIndex} 
+    />)
   
-
-    const getNodes = (attrDictList, level) => {
-      return attrDictList.map((attrDict)=>{
-        if(attrDict.subcategory){
-          return (<td className={classes + " pvtCategoryArea"} key={level}>
-                <h5>{attrDict.name}</h5>
-                <table>
-                  <tbody>
-                    <tr>
-                    {
-                      attrDict.attributes && attrDict.attributes.length > 0 ? makeSortableCells(attrDict, false, level,  "") : ""
-
-                    }
-                    </tr>
-                    <tr>
-                {getNodes(attrDict.subcategory, level + 1)}
-                </tr>
-              </tbody>
-          </table>
-      </td>)
-        } 
-       
-        return makeSortableCells(attrDict, true, level, classes);
-        
-      })
-    }
-
-    return (
-      <td className={classes + " pvtCategoryArea"}>
-        <table>
-          <tbody>
-            <tr>
-              {
-                getNodes(this.props.attrCategory, 1)
-              }
-         </tr>
-        </tbody>
-      </table>
-      </td>
-    );
   }
 
 
@@ -654,7 +720,7 @@ class PivotTableUI extends React.PureComponent {
 
     if (horizUnused) {
       return (
-        <table className="pvtUi" style={{fontSize: "16px"}}>
+        <table className="pvtUi">
           <tbody onClick={() => this.setState({openDropdown: false})}>
             <tr>
               {rendererCell}

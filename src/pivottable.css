@@ -16,7 +16,8 @@
 }
 
 table.pvtTable {
-    font-size: 8pt;
+    /* font-size: 12pt; */
+    font-size: 16px;
     text-align: left;
     border-collapse: collapse;
     margin-top: 3px;
@@ -25,9 +26,9 @@ table.pvtTable {
 }
 table.pvtTable thead tr th,
 table.pvtTable tbody tr th {
-    background-color: #ebf0f8;
+    /* background-color: #ebf0f8; */
     border: 1px solid #c8d4e3;
-    font-size: 8pt;
+    font-size: 12pt;
     padding: 5px;
 }
 
@@ -69,7 +70,7 @@ table.pvtTable tbody tr td {
 .pvtAxisContainer,
 .pvtVals {
     border: 1px solid #a2b1c6;
-    background: #f2f5fa;
+    /* background: #f2f5fa; */
     padding: 5px;
     min-width: 20px;
     min-height: 20px;
@@ -122,7 +123,8 @@ table.pvtTable tbody tr td {
 
 .pvtDropdownValue {
     padding: 2px 5px;
-    font-size: 12px;
+    /* font-size: 12px; */
+    font-size: 16px;
     text-align: left;
 }
 .pvtDropdownActiveValue {
@@ -161,6 +163,7 @@ table.pvtTable tbody tr td {
     background: #f3f6fa;
     border: 1px solid #c8d4e3;
     padding: 2px 5px;
+    font-size: 16px;
     white-space: nowrap;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
@@ -322,6 +325,20 @@ table.pvtTable tbody tr td {
     padding: 5px;
 }
 
+.pvtSubCategoryArea{
+    margin-top: 5px;
+    padding: 10px;
+}
+
 .pvtCategoryArea{
-    padding: 0;
+    padding: 0px;
+}
+
+
+.pvtParentAttrArea{
+    padding-bottom: 10px;
+}
+
+.pvtOmitTd{
+    padding: 5px;
 }
