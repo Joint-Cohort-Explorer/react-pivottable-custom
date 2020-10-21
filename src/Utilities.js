@@ -525,6 +525,18 @@ const derivers = {
   },
 };
 
+/**
+ * Add functions
+ */
+
+const subCategoryRange = (maxRange) => {
+  let rangeArray = [];
+  for(let i = 1; i <= maxRange; i++){
+    rangeArray.push(i);
+  }
+  return rangeArray;
+}
+
 /*
 Data Model class
 */
@@ -775,7 +787,7 @@ PivotData.forEachRecord = function(input, derivedAttributes, f) {
 PivotData.defaultProps = {
   aggregators: aggregators,
   attrClassified: false,
-  attrDict: {},
+  attrCategory: {},
   attrOrder: [],
   unclassifiedAttrName: "Unclassified",
   cols: [],
@@ -794,7 +806,7 @@ PivotData.propTypes = {
     .isRequired,
   attrClassified: PropTypes.bool,
   unclassifiedAttrName: PropTypes.string,
-  attrDict: PropTypes.object,
+  attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
   aggregatorName: PropTypes.string,
   cols: PropTypes.arrayOf(PropTypes.string),
@@ -820,4 +832,5 @@ export {
   getSort,
   sortAs,
   PivotData,
+  subCategoryRange,
 };

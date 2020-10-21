@@ -74,6 +74,7 @@ table.pvtTable tbody tr td {
     padding: 5px;
     min-width: 20px;
     min-height: 20px;
+
 }
 
 .pvtRenderers {
@@ -140,6 +141,10 @@ table.pvtTable tbody tr td {
 
 .pvtRows {
     height: 35px;
+}
+
+.pvtAxisContainer{
+    vertical-align: top;
 }
 
 .pvtAxisContainer li {
@@ -332,6 +337,15 @@ table.pvtTable tbody tr td {
 
 .pvtCategoryArea{
     padding: 0px;
+    height: 150px;
+}
+
+.pvtCategoryArea > table {
+    height: 100%;
+}
+
+.pvtSubCategoryArea > table {
+    height: 100%;
 }
 
 
@@ -342,3 +356,19 @@ table.pvtTable tbody tr td {
 .pvtOmitTd{
     padding: 5px;
 }
+
+.pvtTableOptionLabel{
+    font-size: 16px;
+    padding: 10px 5px 0px 5px;
+}
+
+
+
+/* .pvtCategoryTitle{
+    top: 5px;
+    position: absolute;
+}
+
+.pvtCategoryAreaTd{
+    position: relative;
+} */

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
-import {PivotData, sortAs, getSort} from './Utilities';
+import {PivotData, sortAs, getSort, subCategoryRange} from './Utilities';
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
@@ -227,63 +227,83 @@ export class Dropdown extends React.PureComponent {
   }
 }
 
-
 export class AttributesArea extends React.Component {
   constructor(props) {
      super(props);
      this.state = {
-       attrOrder: this.props.attrOrder,
+       attrOrder: {},
        hideSubComponents: {},
      };
   }
 
-  onChange(items){
-    this.setState({attrOrder: items});
+  // onChange(items){
+  //   this.setState({attrOrder: items});
+  // }
+
+  getAllAttributes(attrDict){
+    const origAttributes = attrDict.attributes || [];
+    let attributes = origAttributes.slice(0); // must be deep copy;
+    if (attrDict.subcategory){
+        attrDict.subcategory.forEach(subAttrDict=>{
+        attributes.push.apply(attributes, this.getAllAttributes(subAttrDict))
+      })
+    }
+    return attributes;
   }
 
   makeCateogryDnDCell(attrDict, showName, level, classes){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
     const name = attrDict.name;
-    const new_attrs = attrDict.attributes && attrDict.attributes.length > 0 ?
-                     attrDict.attributes.filter(findAttr).sort(sortAs(this.state.attrOrder)) : [];
-    return (<Sortable
-      key = {`${level}-${attrDict.name}`}
-      options={{
-        group: 'shared',
-        ghostClass: 'pvtPlaceholder',
-        filter: '.pvtFilterBox',
-        preventOnFilter: false,
-      }}
-    tag="td"
-    className={classes}
-    onChange={this.onChange.bind(this)}
-  >
-    {name && showName?  <h4>{name}</h4>: <span></span>}
-    {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
-              <DraggableAttribute
-                name={x}
-                key = {x}
-                attrValues={this.props.attrValues[x]}
-                valueFilter={this.props.valueFilter[x] || {}}
-                sorter={getSort(this.props.sorters, x)}
-                menuLimit={this.props.menuLimit}
-                setValuesInFilter={this.props.setValuesInFilter.bind(this)}
-                addValuesToFilter={this.props.addValuesToFilter.bind(this)}
-                moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
-                removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
-                zIndex={this.props.zIndices[x] || this.props.maxZIndex}
-              />
-            )):<span></span>}
-          </Sortable>)
-    
+    const key = `${level}-${attrDict.name}`;
+    const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
+    const new_attrs = curAttributes && curAttributes.length > 0 ?
+                      curAttributes.filter(findAttr).sort(sortAs(this.state.attrOrder[key] || this.props.attrOrder)) 
+                      : [];
+   
+    const onChangeAttr = (key) => (
+      order => {
+        let newOrders = Object.assign({}, this.state.attrOrder);
+        newOrders[key] = order
+        this.setState({attrOrder: newOrders})
       }
+      );
+        return (<Sortable
+                  key = {key}
+                  options={{
+                    group: 'shared',
+                    ghostClass: 'pvtPlaceholder',
+                    filter: '.pvtFilterBox',
+                    preventOnFilter: false,
+                  }}
+                tag="td"
+                className={classes}
+                onChange={onChangeAttr(key)}
+                >
+                  {name && showName?  <h4>{name}</h4>: <span></span>}
+                  {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
+                            <DraggableAttribute
+                              name={x}d
+                              key = {x}
+                              attrValues={this.props.attrValues[x]}
+                              valueFilter={this.props.valueFilter[x] || {}}
+                              sorter={getSort(this.props.sorters, x)}
+                              menuLimit={this.props.menuLimit}
+                              setValuesInFilter={this.props.setValuesInFilter.bind(this)}
+                              addValuesToFilter={this.props.addValuesToFilter.bind(this)}
+                              moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
+                              removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
+                              zIndex={this.props.zIndices[x] || this.props.maxZIndex}
+                            />
+                          )):<span></span>}
+            </Sortable>)
+    
+  }
 
   renderList(attrList, level) {
     return attrList.map(attrDict=>{
-      if(attrDict.subcategory){
+      if(attrDict.subcategory && level < this.props.categoryLevel){
         const key = `${level}-${attrDict.name}`;
         return (<td className={this.props.classes + " pvtSubCategoryArea"} key={key}>
-      
               {/* <h4 onClick={()=>{
                   const key = `${level}-${attrDict.name}`;
                 let hideState = Object.assign({}, this.state.hideSubComponents);
@@ -301,25 +321,27 @@ export class AttributesArea extends React.Component {
                <tbody>
                  <tr>
                  {
+                    attrDict.attributes && attrDict. attributes.length > 0 ?
                     this.makeCateogryDnDCell(attrDict, true, level,  "pvtParentAttrArea")
-
+                    :
+                    <td><h4>{attrDict.name}</h4></td>
                  }
                  </tr>
                  <tr>
-             {this.renderList(attrDict.subcategory, level + 1)}
+                {this.renderList(attrDict.subcategory, level + 1)}
              </tr>
            </tbody>
        </table>
              }
       </td>)
       }
-      return this.makeCateogryDnDCell(attrDict, true, level, this.props.classes)
+      return this.makeCateogryDnDCell(attrDict, true, level, this.props.classes + " pvtSubCategoryArea")
     })
   }
 
   render() {
     
-      return(    <td className={this.props.classes + " pvtCategoryArea"}>
+    return(    <td className={this.props.classes + " pvtCategoryArea"}>
             <table>
               <tbody>
                 <tr>
@@ -329,63 +351,20 @@ export class AttributesArea extends React.Component {
             </tr>
             </tbody>
           </table>
-          </td>
-        )
+        </td>
+      )
   }
 
 }
 
-// export class AttributesArea extends React.Component {
-//   constructor(props) {
-//      super(props);
-//      this.state = {
-//        attrOrder: this.props.attrOrder
-//      };
-//   }
 
-//   onChange(items){
-//     this.setState({attrOrder: items});
-//   }
-
-//   render() {
-//     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-//     const name = this.props.attrDict.name;
-//     const new_attrs = this.props.attrDict.attributes.filter(findAttr).sort(sortAs(this.state.attrOrder));
-
-//     return(<Sortable
-//       key = {name}
-//       options={{
-//         group: 'shared',
-//         ghostClass: 'pvtPlaceholder',
-//         filter: '.pvtFilterBox',
-//         preventOnFilter: false,
-//       }}
-//     tag="td"
-//     className={this.props.classes}
-//     onChange={this.onChange.bind(this)}
-//   >
-//    {
-//      this.props.showName?  <h4>{name}</h4>: <span></span>
-//    }
-//     {new_attrs.map(x => (
-//               <DraggableAttribute
-//                 name={x}
-//                 key = {x}
-//                 attrValues={this.props.attrValues[x]}
-//                 valueFilter={this.props.valueFilter[x] || {}}
-//                 sorter={getSort(this.props.sorters, x)}
-//                 menuLimit={this.props.menuLimit}
-//                 setValuesInFilter={this.props.setValuesInFilter.bind(this)}
-//                 addValuesToFilter={this.props.addValuesToFilter.bind(this)}
-//                 moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
-//                 removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
-//                 zIndex={this.props.zIndices[x] || this.props.maxZIndex}
-//               />
-//             ))}
-//           </Sortable>
-//         )
-//   }
-// }
+AttributesArea.propTypes = {
+  attrList: PropTypes.array.isRequired,
+  allAttributes: PropTypes.array.isRequired,
+  classes: PropTypes.string,
+  zIndices: PropTypes.object,
+  maxZIndex: PropTypes.number,
+};
 
 class PivotTableUI extends React.PureComponent {
   constructor(props) {
@@ -506,9 +485,9 @@ class PivotTableUI extends React.PureComponent {
       return ( <AttributesArea
         // key = {`${level}-${attrDict.name}`}
         attrList = {this.props.attrCategory}
-        showName = {true}
         classes = {classes}
         allAttributes = {items}
+        categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
         attrOrder = {this.props.attrOrder}
         attrValues={this.state.attrValues}
         valueFilter={this.props.valueFilter || {}}
@@ -567,6 +546,9 @@ class PivotTableUI extends React.PureComponent {
       this.props.rendererName in this.props.renderers
         ? this.props.rendererName
         : Object.keys(this.props.renderers)[0];
+    
+
+    const curCategoryLevel = this.props.categoryLevel? this.props.categoryLevel: this.props.maxCategoryLevel;
 
     const rendererCell = (
       <td className="pvtRenderers">
@@ -582,6 +564,28 @@ class PivotTableUI extends React.PureComponent {
           }
           setValue={this.propUpdater('rendererName')}
         />
+      {
+        this.props.attrClassified?
+        (<div>
+          
+          <div className={"pvtTableOptionLabel"}> 
+          Show category level
+         </div>
+          <Dropdown
+            current={curCategoryLevel}
+            values={subCategoryRange(this.props.maxCategoryLevel)}
+            open={this.isOpen('categorySetter')}
+            zIndex={this.isOpen('categorySetter') ? this.state.maxZIndex + 1 : 1}
+            toggle={() =>
+              this.setState({
+                openDropdown: this.isOpen('categorySetter') ? false :'categorySetter',
+              })
+            }
+            setValue={this.propUpdater('categoryLevel')}
+          />
+        </div>
+        ):<div></div>
+      }
       </td>
     );
 
@@ -765,6 +769,8 @@ PivotTableUI.propTypes = Object.assign({}, PivotTable.propTypes, {
   hiddenFromDragDrop: PropTypes.arrayOf(PropTypes.string),
   unusedOrientationCutoff: PropTypes.number,
   menuLimit: PropTypes.number,
+  maxCategoryLevel: PropTypes.number,
+  categoryLevel: PropTypes.number,
 });
 
 PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
@@ -773,6 +779,8 @@ PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
   hiddenFromDragDrop: [],
   unusedOrientationCutoff: 85,
   menuLimit: 500,  
+  maxCategoryLevel: 3,
+  categoryLevel: 3,
 });
 
 export default PivotTableUI;
