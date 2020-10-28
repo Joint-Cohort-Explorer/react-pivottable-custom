@@ -1,5 +1,5 @@
 import React from 'react';
-import tips from './tips';
+import tips from './test_data_1';
 import {sortAs} from '../src/Utilities';
 import TableRenderers from '../src/TableRenderers';
 import createPlotlyComponent from 'react-plotly.js/factory';
@@ -48,48 +48,55 @@ export default class App extends React.Component {
                 attrClassified: true,
                 attrCategory:[
                     {
-                        name: "Payer",
-                        // attributes: ['Payer Gender'],
+                        name: "Basic information",
+                        attributes: ['Vendor_Formal_Name', 'Vendor_DBA', 'Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects', 'Job_Exp1_Name_of_Client', 'Job_Exp1_Value_of_Contract', 'Job_Exp1_Percent_Self_Performed', 'DATEOFJOB1', 'EXPERIENCE1', 'Job_Exp2_Name_of_Client', 'Job_Exp2_Value_of_Contract', 'Job_Exp2_Percent_Self_Performed', 'DATEOFJOB2', 'EXPERIENCE2', 'Job_Exp3_Name_of_Client', 'Job_Exp3_Value_of_Contract', 'Job_Exp3_Percent_Self_Performed', 'DATEOFJOB3', 'EXPERIENCE3', 'Job_Exp4_Name_of_Client', 'Job_Exp4_Value_of_Contract', 'Job_Exp4_Percent_Self_Performed', 'DATEOFJOB4', 'EXPERIENCE4'],
                         subcategory: [
-                            {
-                                name: "Test1",
-                                attributes: ['Payer Smoker'],
-                                subcategory: [
-                                    {
-                                        name: "Test2",
-                                        attributes:  ['Payer Gender']
-                                }
-                                ]
-                            },
-                            // {
-                            //     name: "Test2",
-                            //     attributes:  ['Payer Gender']
-                            // }
+                           {
+                            name: "Web",
+                            attributes: [ 'Website'],
+                           }
                         ]
                     },
                     {
-                        name: "Money",
-                        attributes:  ['Tip', 'Total Bill'],
+                        name: "Contact",
+                        attributes: ['Contact_Name', 'telephone', 'fax', 'Email']
                     },
                     {
-                        name: "Others",
-                        // attributes: ['Day of Week','Meal','Party Size'],
-                        subcategory:[
-                            {
-                                name: "Test1",
-                                attributes: ['Meal'],
-                                subcategory: [
-                                    {
-                                        name: "Test2",
-                                        attributes:  ['Day of Week']
-                                },{
-                                    name: "Test3",
-                                    attributes: ['Party Size']
-                                }
-                                ]
-                            },
-                        ]
-                    }
+                        name: "Cert",
+                        attributes: ['certification', 'Cert_Renewal_Date']
+                        
+                    },
+                    
+                    {
+                        name: "Address",
+                        attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
+                    },
+                    {
+                        name: "Mailing",
+                        attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
+                    },
+                    // {
+                    //     name: "Contact",
+                    //     attributes: ['Contact_Name', 'telephone', 'fax', 'Email']
+                    // },
+                    // {
+                    //     name: "Cert",
+                    //     attributes: ['certification', 'Cert_Renewal_Date']
+                        
+                    // },
+                    
+                    // {
+                    //     name: "Address",
+                    //     attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
+                    // },
+                    // {
+                    //     name: "Mailing",
+                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
+                    // },
+                    // {
+                    //     name: "Mailing",
+                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
+                    // }
                 ],
                 // attrDict:{
                 //     "Payer": ['Payer Gender','Payer Smoker'],
@@ -97,22 +104,22 @@ export default class App extends React.Component {
                 //     // "Others": ['Day of Week','Meal','Party Size']
                 // },
                 unclassifiedAttrName: "Others",
-                attrOrder: ["Meal", "Day of Week",  "Party Size", "Total Bill", "Tip",  "Payer Smoker", "Payer Gender"],
+                attrOrder: [],
                 // Orignial
-                rows: ['Payer Gender'],
-                cols: ['Party Size'],
+                rows: [],
+                cols: [],
                 aggregatorName: 'Sum over Sum',
-                vals: ['Tip', 'Total Bill'],
+                vals: [],
                 rendererName: 'Grouped Column Chart',
-                sorters: {
-                    Meal: sortAs(['Lunch', 'Dinner']),
-                    'Day of Week': sortAs([
-                        'Thursday',
-                        'Friday',
-                        'Saturday',
-                        'Sunday',
-                    ]),
-                },
+                // sorters: {
+                //     Meal: sortAs(['Lunch', 'Dinner']),
+                //     'Day of Week': sortAs([
+                //         'Thursday',
+                //         'Friday',
+                //         'Saturday',
+                //         'Sunday',
+                //     ]),
+                // },
                 plotlyOptions: {width: 900, height: 500},
                 plotlyConfig: {},
                 tableOptions: {

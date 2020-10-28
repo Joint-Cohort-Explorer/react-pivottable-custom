@@ -96,7 +96,14 @@ table.pvtTable tbody tr td {
     float: right;
     color: #a2b1c6;
 }
-.pvtDropdownCurrent {
+
+.pvtDropdownCurrent li {
+    padding: 5px;
+    font-size: 16px;
+    list-style-type: none;
+}
+
+.pvtDropdownCurrent{
     text-align: left;
     border: 1px solid #a2b1c6;
     border-radius: 4px;
@@ -337,7 +344,8 @@ table.pvtTable tbody tr td {
 
 .pvtCategoryArea{
     padding: 0px;
-    height: 150px;
+    min-height: 150px;
+    max-height: 400px;
 }
 
 .pvtCategoryArea > table {
@@ -362,6 +370,22 @@ table.pvtTable tbody tr td {
     padding: 10px 5px 0px 5px;
 }
 
+.pvtCategoryDiv {
+    flex-basis: 33.3%;
+    max-height: 200px;
+    border: 1px solid #c8d4e3;
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.pvtAttrsContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: 400px;
+    overflow-y: auto;
+}
 
 
 /* .pvtCategoryTitle{
