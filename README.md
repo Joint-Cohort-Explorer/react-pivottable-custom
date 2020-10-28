@@ -52,5 +52,6 @@ Updated Version
                 ],
 ```
 ### 2. Set category level to display
-### 3. Customized the default orders of unused attributes (to update in next version)
+### 3. Customized the default orders of unused attributes 
 ### 4. Add attribute filters for better user experience when there are more attributes
+### 5. Add unclassfied attributes handler

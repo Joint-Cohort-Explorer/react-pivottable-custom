@@ -244,7 +244,6 @@ export class AttributesArea extends React.Component {
      super(props);
      this.state = {
        attrOrder: {},
-       hideSubComponents: {},
      };
   }
 
@@ -334,11 +333,26 @@ export class AttributesArea extends React.Component {
   }
 
   render() {
-      
+  
+    // get unclassified Attrs
+    const classfiedAttrs = this.props.attrList.reduce((prev, cur)=>{
+          prev.push.apply(prev, this.getAllAttributes(cur))
+          return prev;
+    },[]);
+    const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
+    const unclassfiedAttrs = this.props.allAttributes.filter(findUnclassfiedAttr);
+    let attrList = this.props.attrList;
+    if (unclassfiedAttrs.length > 0){
+      attrList.push({
+        name: this.props.unclassifiedAttrName,
+        attributes: unclassfiedAttrs
+      })
+    }
+
     return(    <td className={this.props.classes + " pvtCategoryArea"}>
              <div className="pvtAttrsContainer">
                 {
-                  this.renderList(this.props.attrList, 1)
+                  this.renderList(attrList, 1)
                 }
             </div>
         </td>
@@ -485,9 +499,10 @@ class PivotTableUI extends React.PureComponent {
     ]
     
       return ( <AttributesArea
-        attrList = {attrList }
+        attrList = {attrList}
         classes = {classes}
-        allAttributes = {remainAttributes }
+        allAttributes = {remainAttributes}
+        unclassifiedAttrName = {this.props.unclassifiedAttrName}
         categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
         attrOrder = {this.props.attrOrder}
         attrValues={this.state.attrValues}
