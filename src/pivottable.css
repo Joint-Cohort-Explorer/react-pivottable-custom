@@ -387,7 +387,13 @@ table.pvtTable tbody tr td {
     overflow-y: auto;
 }
 
+.pvtButtonContainer{
+    margin-top: 10px;
+}
 
+.pvtUnused {
+    position: relative;
+}
 /* .pvtCategoryTitle{
     top: 5px;
     position: absolute;

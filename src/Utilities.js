@@ -530,7 +530,7 @@ const derivers = {
  */
 
 const subCategoryRange = (maxRange) => {
-  let rangeArray = [];
+  const rangeArray = [];
   for(let i = 1; i <= maxRange; i++){
     rangeArray.push(i);
   }

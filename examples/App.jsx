@@ -71,10 +71,10 @@ export default class App extends React.Component {
                         name: "Address",
                         attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
                     },
-                    {
-                        name: "Mailing",
-                        attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
-                    },
+                    // {
+                    //     name: "Mailing",
+                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
+                    // },
                     // {
                     //     name: "Contact",
                     //     attributes: ['Contact_Name', 'telephone', 'fax', 'Email']

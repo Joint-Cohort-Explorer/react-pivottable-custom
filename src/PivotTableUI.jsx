@@ -46,17 +46,20 @@ export class DraggableAttribute extends React.Component {
     const shown = values
       .filter(this.matchesFilter.bind(this))
       .sort(this.props.sorter);
-
+     
+   const divStyle = {
+      display: 'block',
+      cursor: 'initial',
+      zIndex: this.props.zIndex,
+    };
+    if(this.props.rowHeight) {
+      divStyle.top = this.props.rowHeight;
+    }
     return (
       <Draggable handle=".pvtDragHandle">
         <div
           className="pvtFilterBox"
-          style={{
-            display: 'block',
-            cursor: 'initial',
-            zIndex: this.props.zIndex,
-            // top: this.state.curHeight,
-          }}
+          style={divStyle}
           onClick={() => this.props.moveFilterBoxToTop(this.props.name)}
         >
           <a onClick={() => this.setState({open: false})} className="pvtCloseX">
@@ -138,6 +141,7 @@ export class DraggableAttribute extends React.Component {
   toggleFilterBox() {
     this.setState({open: !this.state.open});
     this.props.moveFilterBoxToTop(this.props.name);
+  
   }
 
   render() {
@@ -146,18 +150,7 @@ export class DraggableAttribute extends React.Component {
         ? 'pvtFilteredAttribute'
         : '';
     return (
-      <li data-id={this.props.name}
-        ref={el => {
-          if(!el){
-            return
-          }
-          const curHeight = el.getBoundingClientRect().bottom + 600;
-          if (curHeight !== this.state.curHeight){
-            this.setState({curHeight: curHeight});
-          }
-      }}
-      
-      >
+      <li data-id={this.props.name}>
         <span className={'pvtAttr ' + filtered}>
           {this.props.name}
           <span
@@ -249,7 +242,7 @@ export class AttributesArea extends React.Component {
 
   getAllAttributes(attrDict){
     const origAttributes = attrDict.attributes || [];
-    let attributes = origAttributes.slice(0); // must be deep copy;
+    const attributes = origAttributes.slice(0);
     if (attrDict.subcategory){
         attrDict.subcategory.forEach(subAttrDict=>{
         attributes.push.apply(attributes, this.getAllAttributes(subAttrDict))
@@ -258,7 +251,7 @@ export class AttributesArea extends React.Component {
     return attributes;
   }
 
-  makeCateogryDnDCell(attrDict, showName, level, classes){
+  makeCateogryDnDCell(attrDict, showName, level){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
     const name = attrDict.name;
     const key = `${level}-${attrDict.name}`;
@@ -269,7 +262,7 @@ export class AttributesArea extends React.Component {
    
     const onChangeAttr = (key) => (
       order => {
-        let newOrders = Object.assign({}, this.state.attrOrder);
+        const newOrders = Object.assign({}, this.state.attrOrder);
         newOrders[key] = order
         this.setState({attrOrder: newOrders})
       }
@@ -290,7 +283,7 @@ export class AttributesArea extends React.Component {
                   {name && showName?  <h4>{name}</h4>: <span></span>}
                   {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
                             <DraggableAttribute
-                              name={x}d
+                              name={x}
                               key = {x}
                               attrValues={this.props.attrValues[x]}
                               valueFilter={this.props.valueFilter[x] || {}}
@@ -301,6 +294,7 @@ export class AttributesArea extends React.Component {
                               moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
                               removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
+                              rowHeight = {this.props.rowHeight}
                             />
                           )):<span></span>}
             </Sortable>)
@@ -316,7 +310,7 @@ export class AttributesArea extends React.Component {
                     <div key={key} className="pvtCategoryDiv">
                           {
                               attrDict.attributes && attrDict. attributes.length > 0 ?
-                              this.makeCateogryDnDCell(attrDict, true, level,  "pvtParentAttrArea")
+                              this.makeCateogryDnDCell(attrDict, true, level)
                               :
                               <h4>{attrDict.name}</h4>
                           }
@@ -326,7 +320,7 @@ export class AttributesArea extends React.Component {
       }
       return (
         <div key = {key} className="pvtCategoryDiv">
-       { this.makeCateogryDnDCell(attrDict, true, level, this.props.classes + " pvtSubCategoryArea")}
+       { this.makeCateogryDnDCell(attrDict, true, level)}
       </div>
       )
     })
@@ -335,13 +329,14 @@ export class AttributesArea extends React.Component {
   render() {
   
     // get unclassified Attrs
+    // console.log(this.props.rowHeight)
     const classfiedAttrs = this.props.attrList.reduce((prev, cur)=>{
           prev.push.apply(prev, this.getAllAttributes(cur))
           return prev;
     },[]);
     const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
     const unclassfiedAttrs = this.props.allAttributes.filter(findUnclassfiedAttr);
-    let attrList = this.props.attrList;
+    const attrList = this.props.attrList;
     if (unclassfiedAttrs.length > 0){
       attrList.push({
         name: this.props.unclassifiedAttrName,
@@ -382,6 +377,7 @@ class PivotTableUI extends React.PureComponent {
       attrValues: {},
       materializedInput: [],
     };
+    this.unusedRowRef = React.createRef();
   }
 
   componentDidMount() {
@@ -469,6 +465,7 @@ class PivotTableUI extends React.PureComponent {
     this.sendPropUpdate({
       valueFilter: {[attribute]: {$unset: values}},
     });
+    // console.log(this.props.valueFilter)
   }
 
   moveFilterBoxToTop(attribute) {
@@ -497,6 +494,8 @@ class PivotTableUI extends React.PureComponent {
        attributes: remainAttributes
      }
     ]
+
+    const rowHeight = this.unusedRowRef.current ? this.unusedRowRef.current.clientHeight : 0;
     
       return ( <AttributesArea
         attrList = {attrList}
@@ -506,6 +505,7 @@ class PivotTableUI extends React.PureComponent {
         categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
         attrOrder = {this.props.attrOrder}
         attrValues={this.state.attrValues}
+        rowHeight = {rowHeight}
         valueFilter={this.props.valueFilter || {}}
         sorter={this.props.sorters}
         menuLimit={this.props.menuLimit}
@@ -556,7 +556,9 @@ class PivotTableUI extends React.PureComponent {
   }
 
   
-
+//  componentDidMount(){
+//   //  console.log(this.unusedRowRef.current.clientHeight)
+//  }
   render() {
     const numValsAllowed =
       this.props.aggregators[this.props.aggregatorName]([])().numInputs || 0;
@@ -687,7 +689,12 @@ class PivotTableUI extends React.PureComponent {
        zIndex={this.state.zIndices[searchName] || this.state.maxZIndex}
 
       />)
-
+    
+    const resetButton = (
+      <button onClick={()=>{
+        this.sendPropUpdate({valueFilter: {$set: {}}});
+      }}>Reset Filters</button>
+    )
     const rendererCell = (
       <td className="pvtRenderers">
         <Dropdown
@@ -731,6 +738,11 @@ class PivotTableUI extends React.PureComponent {
           searchAttrs
         }
        </div>
+       <div className="pvtButtonContainer">
+        {
+          resetButton
+        }
+       </div>
        </div>
       </td>
     );
@@ -772,7 +784,16 @@ class PivotTableUI extends React.PureComponent {
       return (
         <table className="pvtUi">
           <tbody onClick={() => this.setState({openDropdown: false})}>
-            <tr>
+            <tr ref = {this.unusedRowRef}
+            //  ref={el => {
+            //           if(!el){
+            //             return
+            //           }
+            //          setTimeout(()=>{
+            //           this.sendPropUpdate({unusedRowHeight: {$set: el.clientHeight}});
+            //          })
+            //       }}
+              >
               {rendererCell}
               {unusedAttrsCell}
             </tr>
