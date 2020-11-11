@@ -389,16 +389,56 @@ table.pvtTable tbody tr td {
 
 .pvtButtonContainer{
     margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .pvtUnused {
     position: relative;
 }
-/* .pvtCategoryTitle{
-    top: 5px;
-    position: absolute;
+
+.pvtCategoryContainer {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
-.pvtCategoryAreaTd{
+.pvtCateogryCard {
+    position: static;
+}
+
+/* Dropdown menus */
+.dropdown-submenu {
     position: relative;
-} */
+  }
+  
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+
+.dropdown, .dropdown > .btn, .btn {
+    font-size: 14px;
+}
+
+/* Dropdown tests */
+
+.dropdown-item{
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0px;
+}
+
+.card-title{
+   display: inline-block;
+   cursor: pointer;
+}
+
+
+.nav-item, .dropdown-menu  > li {
+    display: block;
+    cursor: pointer;
+}

@@ -1,6 +1,6 @@
 {
   "name": "react-pivottable-custom",
-  "version": "0.1.0",
+  "version": "0.1.0-test",
   "description": "A modified version of pivot table based on react-pivottable for demo and test",
   "main": "PivotTableUI.js",
   "files": [
@@ -44,6 +44,8 @@
   },
   "homepage": "https://github.com/YuyaoZhong/react-pivottable#readme",
   "dependencies": {
+    "bootstrap": "^4.5.3",
+    "classnames": "^2.2.6",
     "immutability-helper": "^2.3.1",
     "prop-types": "^15.5.10",
     "react-draggable": "^3.0.3",

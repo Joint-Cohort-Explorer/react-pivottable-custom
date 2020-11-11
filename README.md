@@ -5,14 +5,25 @@ Please see [https://github.com/plotly/react-pivottable#readme](https://github.co
 
 ## Added features
 
-### 1.Unused Attributes with categories
-Updated Version
+### 1. Unused Attributes with categories
+### 2. Set category level to display (Removed in new look)
+### 3. Customized the default orders of unused attributes 
+### 4. Add attribute filters for better user experience when there are more attributes
+      - Update: change to search function on the top of the table
+### 5. Add unclassfied attributes handler
+### 6. Add Reset function
+
+## Usage 
+### Configure categories for attributes
+This fearture is mainly designed for scenario when there are lots of attributes to analyze, providing a better way to organize attributes.
+
+See the example form NYC Open Data in `App.js`.
+
 ```JavaScript
                 attrClassified: true,
                 attrCategory:[
                     {
                         name: "Payer",
-                        // attributes: ['Payer Gender'],
                         subcategory: [
                             {
                                 name: "Test1",
@@ -51,8 +62,3 @@ Updated Version
                     }
                 ],
 ```
-### 2. Set category level to display
-### 3. Customized the default orders of unused attributes 
-### 4. Add attribute filters for better user experience when there are more attributes
-### 5. Add unclassfied attributes handler
-### 6. Add Reset function

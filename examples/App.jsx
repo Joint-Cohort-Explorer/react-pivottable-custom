@@ -49,11 +49,22 @@ export default class App extends React.Component {
                 attrCategory:[
                     {
                         name: "Basic information",
-                        attributes: ['Vendor_Formal_Name', 'Vendor_DBA', 'Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects', 'Job_Exp1_Name_of_Client', 'Job_Exp1_Value_of_Contract', 'Job_Exp1_Percent_Self_Performed', 'DATEOFJOB1', 'EXPERIENCE1', 'Job_Exp2_Name_of_Client', 'Job_Exp2_Value_of_Contract', 'Job_Exp2_Percent_Self_Performed', 'DATEOFJOB2', 'EXPERIENCE2', 'Job_Exp3_Name_of_Client', 'Job_Exp3_Value_of_Contract', 'Job_Exp3_Percent_Self_Performed', 'DATEOFJOB3', 'EXPERIENCE3', 'Job_Exp4_Name_of_Client', 'Job_Exp4_Value_of_Contract', 'Job_Exp4_Percent_Self_Performed', 'DATEOFJOB4', 'EXPERIENCE4'],
+                        attributes: ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'],
                         subcategory: [
                            {
                             name: "Web",
                             attributes: [ 'Website'],
+                            subcategory: [
+                                {
+                                    name: "Vendor",
+                                    attributes: ['Vendor_Formal_Name', 'Vendor_DBA']
+                                }
+                            ]
+                           },
+                           {
+                               name: "Job",
+                               attributes: ['Job_Exp1_Name_of_Client', 'Job_Exp1_Value_of_Contract', 'Job_Exp1_Percent_Self_Performed', 'DATEOFJOB1', 'EXPERIENCE1', 'Job_Exp2_Name_of_Client', 'Job_Exp2_Value_of_Contract', 'Job_Exp2_Percent_Self_Performed', 'DATEOFJOB2', 'EXPERIENCE2', 'Job_Exp3_Name_of_Client', 'Job_Exp3_Value_of_Contract', 'Job_Exp3_Percent_Self_Performed', 'DATEOFJOB3', 'EXPERIENCE3', 'Job_Exp4_Name_of_Client', 'Job_Exp4_Value_of_Contract', 'Job_Exp4_Percent_Self_Performed']
+
                            }
                         ]
                     },
@@ -71,38 +82,7 @@ export default class App extends React.Component {
                         name: "Address",
                         attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
                     },
-                    // {
-                    //     name: "Mailing",
-                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
-                    // },
-                    // {
-                    //     name: "Contact",
-                    //     attributes: ['Contact_Name', 'telephone', 'fax', 'Email']
-                    // },
-                    // {
-                    //     name: "Cert",
-                    //     attributes: ['certification', 'Cert_Renewal_Date']
-                        
-                    // },
-                    
-                    // {
-                    //     name: "Address",
-                    //     attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
-                    // },
-                    // {
-                    //     name: "Mailing",
-                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
-                    // },
-                    // {
-                    //     name: "Mailing",
-                    //     attributes: [ 'MailingAddress1', 'MailingAddress2', 'MailingCity', 'MailingState', 'MailingZip']
-                    // }
                 ],
-                // attrDict:{
-                //     "Payer": ['Payer Gender','Payer Smoker'],
-                //     "Money": ['Tip', 'Total Bill'],
-                //     // "Others": ['Day of Week','Meal','Party Size']
-                // },
                 unclassifiedAttrName: "Others",
                 attrOrder: [],
                 // Orignial
