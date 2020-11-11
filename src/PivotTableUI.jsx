@@ -166,7 +166,7 @@ export class DraggableAttribute extends React.Component {
         </span>
 
         {this.state.open ? this.getFilterBox() : null}
-      </li>) : (<div>
+      </li>) : (<div style={{position: "relative"}}>
         <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
                     <SearchButton/>
           </span>
@@ -410,7 +410,7 @@ export class CategoryCard extends React.Component {
   }
 
   render(){
-    return(  <div className = "card pvtCateogryCard" key={this.props.attrDict.name}>
+    return(  <div className = "pvtCateogryCard" key={this.props.attrDict.name}>
         <div className = "card-header">
           <div 
             onClick={()=>{this.setState({open: !this.state.open})}}
