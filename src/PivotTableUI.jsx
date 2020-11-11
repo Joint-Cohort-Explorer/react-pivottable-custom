@@ -6,9 +6,6 @@ import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
 import classNames from 'classnames';
-// mark for publish
-
-import 'bootstrap/dist/css/bootstrap.min.css';
 /* eslint-disable react/prop-types */
 // eslint can't see inherited propTypes!
 
@@ -420,7 +417,7 @@ export class CategoryCard extends React.Component {
             className= "card-title" 
             style = {{display: "inline-block", width: "80%"}}
           >
-          <h2> {this.props.attrDict.name} </h2>
+          {this.props.attrDict.name} 
           </div>
           {this.renderMenu(this.props.attrDict)}
         </div>

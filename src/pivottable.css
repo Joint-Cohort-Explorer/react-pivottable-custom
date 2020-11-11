@@ -344,6 +344,7 @@ table.pvtTable tbody tr td {
 
 .pvtCategoryArea{
     padding: 0px;
+    width: 100%;
     min-height: 150px;
     max-height: 400px;
 }
@@ -435,6 +436,7 @@ table.pvtTable tbody tr td {
 .card-title{
    display: inline-block;
    cursor: pointer;
+   font-size: 20px;
 }
 
 
