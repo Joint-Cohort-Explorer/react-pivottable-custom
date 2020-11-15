@@ -354,8 +354,10 @@ export class CategoryCard extends React.Component {
     })
 
     const dropdownClass = level === 1? "dropdown-menu" : "dropdown-submenu"
+    const style = this.state.showMenu? {display: "block"} : {display:"none"};
     return (<ul
       className={dropdownClass}
+      style = {style}
       key = {`${level}`}
       >
         { subMenuItems}
