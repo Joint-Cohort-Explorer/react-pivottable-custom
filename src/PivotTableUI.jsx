@@ -399,7 +399,7 @@ export class CategoryCard extends React.Component {
 
   // udpate search function for 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.attrDict.attributes.length !== this.props.attrDict.attributes.length) {
+    if (nextProps.attrDict.attributes && this.props.attrDict.attributes && nextProps.attrDict.attributes.length !== this.props.attrDict.attributes.length) {
       this.setState({
         selectName: nextProps.attrDict.name,
         selectAttributes: nextProps.attrDict.attributes,

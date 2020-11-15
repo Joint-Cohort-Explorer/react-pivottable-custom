@@ -86,7 +86,7 @@ export default class App extends React.Component {
                 unclassifiedAttrName: "Others",
                 attrOrder: [],
                 // Orignial
-                rows: [],
+                rows: ['Address1', 'Address2', 'City', 'State', 'ZIP'],
                 cols: [],
                 aggregatorName: 'Sum over Sum',
                 vals: [],
