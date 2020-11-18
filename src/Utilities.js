@@ -537,6 +537,34 @@ const subCategoryRange = (maxRange) => {
   return rangeArray;
 }
 
+const getAllAttributes= (attrDict) => {
+  const origAttributes = attrDict.attributes || [];
+  const attributes = origAttributes.slice(0);
+  if (attrDict.subcategory){
+      attrDict.subcategory.forEach(subAttrDict=>{
+      attributes.push.apply(attributes, getAllAttributes(subAttrDict))
+    })
+  }
+  return attributes;
+}
+
+
+/**
+ * get reverse map
+ */
+
+ const getAttributeReverseMap = (attrCategory) =>{
+   let attrsToCateogry = {};
+   attrCategory.forEach(attrDict=>{
+     const allAttrs = getAllAttributes(attrDict);
+     allAttrs.forEach(attr=>{
+       attrsToCateogry[attr] = attrDict.name
+     })
+   });
+   return attrsToCateogry;
+ }
+
+ 
 /*
 Data Model class
 */
@@ -732,6 +760,8 @@ class PivotData {
   }
 }
 
+
+
 // can handle arrays or jQuery selections of tables
 PivotData.forEachRecord = function(input, derivedAttributes, f) {
   let addRecord, record;
@@ -789,6 +819,7 @@ PivotData.defaultProps = {
   attrClassified: false,
   attrCategory: {},
   attrOrder: [],
+  attrLabel: {},
   unclassifiedAttrName: "Unclassified",
   cols: [],
   rows: [],
@@ -808,6 +839,7 @@ PivotData.propTypes = {
   unclassifiedAttrName: PropTypes.string,
   attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
+  attrLabel: PropTypes.objectOf(PropTypes.string),
   aggregatorName: PropTypes.string,
   cols: PropTypes.arrayOf(PropTypes.string),
   rows: PropTypes.arrayOf(PropTypes.string),
@@ -822,6 +854,9 @@ PivotData.propTypes = {
   colOrder: PropTypes.oneOf(['key_a_to_z', 'value_a_to_z', 'value_z_to_a']),
 };
 
+
+
+
 export {
   aggregatorTemplates,
   aggregators,
@@ -833,4 +868,6 @@ export {
   sortAs,
   PivotData,
   subCategoryRange,
+  getAttributeReverseMap,
+  getAllAttributes
 };

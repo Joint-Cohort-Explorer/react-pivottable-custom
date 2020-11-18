@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
-import {PivotData, sortAs, getSort} from './Utilities';
+import {PivotData, sortAs, getSort, getAllAttributes} from './Utilities';
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
@@ -12,7 +12,7 @@ import classNames from 'classnames';
 export class DraggableAttribute extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {open: false, filterText: '', curHeight: 0};
+    this.state = {open: false, filterText: '', curHeight: 0, hover:false};
   }
 
   toggleValue(value) {
@@ -118,6 +118,7 @@ export class DraggableAttribute extends React.Component {
             </p>
           )}
 
+
           {showMenu && (
             <div className="pvtCheckContainer">
               {shown.map(x => (
@@ -147,14 +148,49 @@ export class DraggableAttribute extends React.Component {
   
   }
 
+  toggleHoverLabel(status){
+    this.setState({hover: status})
+  }
+
+  handleMouseOver(){
+    this.handle = setTimeout(() => {
+      this.setState({hover: true});
+  }, 1200)
+  }
+
+  handleMouseLeave(){
+    this.setState({hover: false});
+    if (this.handle) {
+      clearTimeout(this.handle);
+      this.handle = undefined;
+  }
+}
+
+
   render() {
     const filtered =
       Object.keys(this.props.valueFilter).length !== 0
         ? 'pvtFilteredAttribute'
         : '';
+
+    const tooLtipStyles = {display: this.state.hover ? 'block': 'none',
+    visibility: this.state.hover ? 'visible': 'hidden'
+  };
+
     return (
-      !this.props.searchDropDown ? (    <li data-id={this.props.name}>
-        <span className={'pvtAttr ' + filtered}>
+      !this.props.searchDropDown ? ( <li data-id={this.props.name}
+        onMouseOver={this.handleMouseOver.bind(this)}
+        onMouseLeave={this.handleMouseLeave.bind(this)}
+        onMouseOut = {this.handleMouseLeave.bind(this)}
+        onMouseDown = {()=>{this.setState({hover: false})}}
+        onMouseUp={(e)=>{
+          this.setState({hover: false})
+          console.log('not dragging')
+          e.stopPropagation()
+          e.preventDefault()
+        }}
+      >
+        <span className={'pvtAttr tooltip' + filtered}>
           {this.props.name}
           <span
             className="pvtTriangle"
@@ -163,14 +199,20 @@ export class DraggableAttribute extends React.Component {
             {' '}
             ▾
           </span>
+          <span className= "tooltiptext" style = {tooLtipStyles}>{this.props.label}</span>
         </span>
 
+      
+
         {this.state.open ? this.getFilterBox() : null}
-      </li>) : (<div style={{position: "relative"}}>
+        </li>) : (<div style={{position: "relative"}}>
         <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
                     <SearchButton/>
           </span>
         {this.state.open ? this.getFilterBox() : null}
+         
+          
+          
       </div>)
     );
   }
@@ -182,6 +224,7 @@ DraggableAttribute.defaultProps = {
 
 DraggableAttribute.propTypes = {
   name: PropTypes.string.isRequired,
+  label: PropTypes.string,
   addValuesToFilter: PropTypes.func.isRequired,
   removeValuesFromFilter: PropTypes.func.isRequired,
   attrValues: PropTypes.objectOf(PropTypes.number).isRequired,
@@ -256,9 +299,14 @@ export class CategoryCard extends React.Component {
       open: false,
       attrOrder: {},
       showMenu: false,
+      showAll: false,
+      // mouseOver: false,
       selectCategory: {},
       selectName: this.props.attrDict.name,
-      selectAttributes: this.props.attrDict.attributes,
+      selectCateDict: {},
+
+      // selectAttributes: this.props.attrDict.attributes,
+      // allSubAttributes: getAllAttributes(this.props.attrDict)
     };
    
   }
@@ -300,13 +348,15 @@ export class CategoryCard extends React.Component {
                   }}
                 tag="div"
                 // className={classes}
-                
+                style={{"width": "100%"}}
                 onChange={onChangeAttr(key)}
                 >
-                  {name ?  <h4>{name}</h4>: <span></span>}
-                  {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
+                  {/* {name ?  <h4>{name}</h4>: <span></span>} */}
+                  {new_attrs && new_attrs.length > 0 && this.state.open? new_attrs.map(x => (
                             <DraggableAttribute
+                      
                               name={x}
+                              label = {x} // for tests
                               key = {x}
                               attrValues={this.props.attrValues[x]}
                               valueFilter={this.props.valueFilter[x] || {}}
@@ -319,7 +369,7 @@ export class CategoryCard extends React.Component {
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
                               rowHeight = {this.props.rowHeight}
                             />
-                          )):<span></span>}
+                          )):<div className="pvtPlaceholder pvtCategoryAttrHolder"></div>}
             </Sortable>)
     
   }
@@ -363,6 +413,33 @@ export class CategoryCard extends React.Component {
         { subMenuItems}
     </ul>)
   }
+
+  handleSelectCategory(attrDict){
+    const selectDict = Object.assign({}, attrDict);
+   
+    if(this.state.showAll && attrDict.subcategory && attrDict.subcategory.length > 0){
+      attrDict.subcategory.forEach(subAttrDict=>{
+        const allSubAttributes = getAllAttributes(subAttrDict);
+        selectDict.subcategory.push.apply( selectDict.subcategory, {
+          "name": subAttrDict.name,
+          "attributes": allSubAttributes
+        })
+      })
+      
+    }
+  }
+
+  toggleShowAll(attrDict){
+    // const nextShowState = !this.state.showAll;
+    // const attrs = nextShowState? this.state.allSubAttributes: attrDict.attributes;
+    // this.setState({
+    //   open: true,
+    //   showMenu: false,
+    //   showAll: nextShowState,
+    //   selectName: attrDict.name,
+    //   selectAttributes: attrs
+    // })
+  }
   // get the drop down for the current attributes
   renderMenu(attrDict){
     if(attrDict.subcategory && attrDict.subcategory.length > 0){
@@ -373,14 +450,22 @@ export class CategoryCard extends React.Component {
 
        return(<div className={classNames("dropdown dropleft", {open: this.state.showMenu})} 
                   style={{float: "right",
-                  maxWidth: "20%",
-                  
                   }}>
-                <button className = "btn btn-light dropdown-toggle" type = "button"
+                
+                <button className = "btn dropdown-toggle" type = "button"
                     onClick = {()=>this.setState({showMenu: !this.state.showMenu})}
                 >
                   {this.state.selectName}
                 </button>
+                <button className="btn dropdown-toggle" 
+                  onClick = {()=>this.setState({
+                    open: true,
+                    showMenu: false,
+                    showAll: true,
+                    selectName: attrDict.name,
+                    selectAttributes: this.getAllAttributes(attrDict)
+                  })}
+                >{this.state.showAll? "hide subcategory":"show all"}</button>
                 {this.getMenuItems(attrList, 1)}
         </div>)
     } 
@@ -398,7 +483,30 @@ export class CategoryCard extends React.Component {
     return attributes;
   }
 
-
+  renderList(attrList, level) {
+    return attrList.map(attrDict=>{
+      const key = `${level}-${attrDict.name}`;
+      if(attrDict.subcategory && level < this.props.categoryLevel){
+     
+        return (
+                    <div key={key} className="pvtCategoryDiv">
+                          {
+                              attrDict.attributes && attrDict. attributes.length > 0 ?
+                              this.makeCateogryDnDCell(attrDict, true, level)
+                              :
+                              <h4>{attrDict.name}</h4>
+                          }
+                           {this.renderList(attrDict.subcategory, level + 1)}
+                </div>
+              )
+      }
+      return (
+        <div key = {key} className="pvtCategoryDiv">
+       { this.makeCateogryDnDCell(attrDict, true, level)}
+      </div>
+      )
+    })
+  }
   // udpate search function for 
   componentWillReceiveProps(nextProps) {
     if (nextProps.attrDict.attributes && this.props.attrDict.attributes && nextProps.attrDict.attributes.length !== this.props.attrDict.attributes.length) {
@@ -412,28 +520,36 @@ export class CategoryCard extends React.Component {
   }
 
   render(){
-    return(  <div className = "pvtCateogryCard" key={this.props.attrDict.name}>
-        <div className = "card-header">
-          <div 
-            onClick={()=>{this.setState({open: !this.state.open})}}
-            className= "card-title" 
-            style = {{display: "inline-block", width: "80%"}}
-          >
-          {this.props.attrDict.name} 
-          </div>
-          {this.renderMenu(this.props.attrDict)}
-        </div>
+    return(  <div className = "pvtCateogryCard" 
+                 key={this.props.attrDict.name}
+                //  onMouseOver={()=>{
+
+                //   setTimeout(()=>{
+                //     this.setState({
+                //       mouseOver: true,
+                //       open: true})
+                //   }, 3000)
+                //  }}
+             >
+            <div className = "card-header">
+              <div 
+                onClick={()=>{this.setState({open: !this.state.open, showMenu: false})}}
+                className= "card-title" 
+                style = {{display: "inline-block", width: "80%"}}
+              >
+              {this.props.attrDict.name} 
+              </div>
+              {this.renderMenu(this.props.attrDict)}
+              {/* {this.props.attrDict.subcategory? <button>showAll</button>: ""} */}
+            </div>
         
-      {
-        this.state.open?
-        <div className="card-body">
+            <div className="card-body">
         {this.makeCateogryDnDCell({
           name: this.state.selectName,
           attributes: this.state.selectAttributes,
         }, 1)}
 
-      </div>:""
-      }
+      </div>
 
       </div>)
   }
