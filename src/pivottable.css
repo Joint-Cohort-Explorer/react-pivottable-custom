@@ -456,12 +456,6 @@ table.pvtTable tbody tr td {
     padding: 0px;
 }
 
-.card-title{
-   display: inline-block;
-   cursor: pointer;
-   font-size:  16px;
-   margin-bottom: 0.2rem;
-}
 
 
 .nav-item, .dropdown-menu  > li {
@@ -509,7 +503,9 @@ table.pvtTable tbody tr td {
   }
   
 
-/** customized card **/
+/*
+  customized card 
+*/
 .card-header {
     padding: 10px;
     font-size: 16px;
@@ -518,11 +514,16 @@ table.pvtTable tbody tr td {
     color: #3f4f75;
 }
 
-/* .card-body {
-    padding: 10px;
-} */
+.card-title{
+    display: inline-block;
+    cursor: pointer;
+    font-size:  16px;
+ }
+ 
 
-/** Dropdown Menu - Bootstrap**/
+/*
+Dropdown Menu - Bootstrap
+*/
 .dropdown-item {
     display: block;
     width: 100%;
@@ -584,3 +585,21 @@ table.pvtTable tbody tr td {
     outline-color: transparent;
     box-shadow: 0 0 0 0.2rem rgba(108,117,125,.5);
 }
+
+
+/* custom component */
+
+.attr-num-input{
+    height: 25px;
+    width: 40px;
+    border: transparent;
+    background-color: #f3f6fa7a;
+    margin-right: 5px;
+    text-align: center;
+}
+
+.attr-num-input:focus, .attr-num-input:active{
+    outline-color: transparent;
+    box-shadow: 0 0 0 0.2rem rgba(108,117,125,.5);
+}
+
