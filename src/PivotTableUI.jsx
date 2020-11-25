@@ -5,7 +5,7 @@ import {PivotData, sortAs, getSort, getAllAttributes} from './Utilities';
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
-import classNames from 'classnames';
+
 /* eslint-disable react/prop-types */
 // eslint can't see inherited propTypes!
 
@@ -55,8 +55,8 @@ export class DraggableAttribute extends React.Component {
     if(this.props.rowHeight) {
       divStyle.top = this.props.rowHeight;
     }
-    if(this.props.searchDropDown) {
-      divStyle.right = '40px' // may change to styles
+    if(this.props.searchDropDown) {// modified for search filter box
+      divStyle.right = '40px' 
     }
     return (
       <Draggable handle=".pvtDragHandle">
@@ -153,16 +153,17 @@ export class DraggableAttribute extends React.Component {
   }
 
   handleMouseOver(){
+    const DELAY_SECONDS = 1000;
     this.handle = setTimeout(() => {
       this.setState({hover: true});
-  }, 1000)
+  }, DELAY_SECONDS )
   }
 
   handleMouseLeave(){
     this.setState({hover: false});
     if (this.handle) {
       clearTimeout(this.handle);
-      this.handle = undefined;
+      this.handle = null;
   }
 }
 
@@ -185,7 +186,7 @@ export class DraggableAttribute extends React.Component {
         onMouseDown = {()=>{this.setState({hover: false})}}
         onMouseUp={()=>{this.setState({hover: false})}}
       >
-        <span className={'pvtAttr tooltip' + filtered}>
+        <span className={'pvtAttr tooltip ' + filtered}>
           {this.props.name}
           <span
             className="pvtTriangle"
@@ -194,7 +195,10 @@ export class DraggableAttribute extends React.Component {
             {' '}
             ▾
           </span>
-          <span className= "tooltiptext" style = {tooLtipStyles}>{this.props.label}</span>
+          {
+            this.props.label && this.props.label !== ""?
+            <span className= "tooltiptext" style = {tooLtipStyles}>{this.props.label}</span>:""
+          }
         </span>
 
       
@@ -317,14 +321,14 @@ export class CategoryCard extends React.Component {
 
   makeCateogryDnDCell(attrDict, level){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-    const name = attrDict.name;
+    // const name = attrDict.name;
     const key = `${level}-${attrDict.name}`;
     // const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
     const curAttributes = attrDict.attributes;
     const new_attrs = curAttributes && curAttributes.length > 0 ?
                       curAttributes.filter(findAttr).sort(sortAs(this.state.attrOrder[key] || this.props.attrOrder)).slice(0, this.state.showAttrNums)
                       : [];
-  //  console.log(attrDict)
+
     const onChangeAttr = (key) => (
       order => {
         const newOrders = Object.assign({}, this.state.attrOrder);
@@ -353,7 +357,7 @@ export class CategoryCard extends React.Component {
                             <DraggableAttribute
                       
                               name={x}
-                              label = {x} // for tests
+                              label = {this.props.attrLabel[x] || ""} // for tests
                               key = {x}
                               attrValues={this.props.attrValues[x]}
                               valueFilter={this.props.valueFilter[x] || {}}
@@ -434,9 +438,7 @@ export class CategoryCard extends React.Component {
     })
   }
 
-  handleAttrNums(){
-
-  }
+ 
   // get the drop down for the current attributes
   renderMenu(attrDict){
     let attrList = [];
@@ -449,10 +451,10 @@ export class CategoryCard extends React.Component {
     } 
 
 
-    return(<div className={classNames("dropdown dropleft", {open: this.state.showMenu})} 
+    return(<div className="dropdown dropleft"
                style={{float: "right",
                }}>
-               <input className= 'attr-num-input' type='number' min = {0} defaultValue={10} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} />
+           
              {
                attrDict.subcategory && attrDict.subcategory.length > 0 ? (<span>
                    <button className = "btn dropdown-toggle" type = "button"
@@ -467,6 +469,8 @@ export class CategoryCard extends React.Component {
              {this.getMenuItems(attrList, 1)}
                </span>): ""
              }
+
+            <input className= 'attr-num-input' type='number' min = {0} defaultValue={10} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} />
      </div>)
   }
 
@@ -497,8 +501,10 @@ export class CategoryCard extends React.Component {
           open: true,
           showMenu: false
         });
-    } else if (curAttrs.length !== nextAttrs.length) {
+    } else if (curAttrs.length !== nextAttrs.length &&  this.props.allAttributes.length !== 0) {
       this.setState({open: curAttrs.length !== nextAttrs.length && this.props.allAttributes.length !== 0});
+    } else if ( this.props.allAttributes.length === 0){
+      this.setState({open: this.props.defaultOpen});
     }
   }
 
@@ -531,165 +537,6 @@ export class CategoryCard extends React.Component {
 
 }
 
-// may delete the class
-export class AttributesArea extends React.Component {
-  constructor(props) {
-     super(props);
-     this.state = {
-       attrOrder: {},
-     };
-    //  this.container = React.createRef();
-  }
-
-  getAllAttributes(attrDict){
-    const origAttributes = attrDict.attributes || [];
-    const attributes = origAttributes.slice(0);
-    if (attrDict.subcategory){
-        attrDict.subcategory.forEach(subAttrDict=>{
-        attributes.push.apply(attributes, this.getAllAttributes(subAttrDict))
-      })
-    }
-    return attributes;
-  }
-
-  makeCateogryDnDCell(attrDict, showName, level){
-    const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-    const name = attrDict.name;
-    const key = `${level}-${attrDict.name}`;
-    const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
-    const new_attrs = curAttributes && curAttributes.length > 0 ?
-                      curAttributes.filter(findAttr).sort(sortAs(this.state.attrOrder[key] || this.props.attrOrder)) 
-                      : [];
-   
-    const onChangeAttr = (key) => (
-      order => {
-        const newOrders = Object.assign({}, this.state.attrOrder);
-        newOrders[key] = order
-        this.setState({attrOrder: newOrders})
-      }
-      );
-        return (<Sortable
-                  key = {key}
-                  options={{
-                    group: 'shared',
-                    ghostClass: 'pvtPlaceholder',
-                    filter: '.pvtFilterBox',
-                    preventOnFilter: false,
-                  }}
-                tag="div"
-                // className={classes}
-                
-                onChange={onChangeAttr(key).bind(this)}
-                >
-                  {name && showName?  <h4>{name}</h4>: <span></span>}
-                  {new_attrs && new_attrs.length > 0 ? new_attrs.map(x => (
-                            <DraggableAttribute
-                              name={x}
-                              key = {x}
-                              attrValues={this.props.attrValues[x]}
-                              valueFilter={this.props.valueFilter[x] || {}}
-                              sorter={getSort(this.props.sorters, x)}
-                              menuLimit={this.props.menuLimit}
-                              setValuesInFilter={this.props.setValuesInFilter.bind(this)}
-                              addValuesToFilter={this.props.addValuesToFilter.bind(this)}
-                              moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
-                              removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
-                              zIndex={this.props.zIndices[x] || this.props.maxZIndex}
-                              rowHeight = {this.props.rowHeight}
-                            />
-                          )):<span>No Attributes Here.</span>}
-            </Sortable>)
-    
-  }
-
-  renderList(attrList, level) {
-    return attrList.map(attrDict=>{
-      const key = `${level}-${attrDict.name}`;
-      if(attrDict.subcategory && level < this.props.categoryLevel){
-     
-        return (
-                    <div key={key} className="pvtCategoryDiv">
-                          {
-                              attrDict.attributes && attrDict. attributes.length > 0 ?
-                              this.makeCateogryDnDCell(attrDict, true, level)
-                              :
-                              <h4>{attrDict.name}</h4>
-                          }
-                           {this.renderList(attrDict.subcategory, level + 1)}
-                </div>
-              )
-      }
-      return (
-        <div key = {key} className="pvtCategoryDiv">
-       { this.makeCateogryDnDCell(attrDict, true, level)}
-      </div>
-      )
-    })
-  }
-
-
-  render() {
-  
-    // get unclassified Attrs
-    const classfiedAttrs = this.props.attrList.reduce((prev, cur)=>{
-          prev.push.apply(prev, this.getAllAttributes(cur))
-          return prev;
-    },[]);
-    const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
-    const unclassfiedAttrs = this.props.allAttributes.filter(findUnclassfiedAttr);
-    const attrList = this.props.attrList;
-    if (unclassfiedAttrs.length > 0){
-      attrList.push({
-        name: this.props.unclassifiedAttrName,
-        attributes: unclassfiedAttrs
-      })
-    }
-
-    return (<td className={this.props.classes + " pvtCategoryArea"}>
-      <div className="pvtCategoryContainer">
-      {
-        attrList.map((attrDict, i)=>{
-          return(<CategoryCard
-            key = {attrDict.name}
-            attrDict = {attrDict}
-            classes = {this.props.classes}
-            allAttributes = {this.props.allAttributes}
-            defaultOpen = {i === 0}
-            // unclassifiedAttrName = {this.props.unclassifiedAttrName}
-            // categoryLevel = {1}
-            attrOrder = {this.props.attrOrder}
-            attrValues={this.props.attrValues}
-            rowHeight = {this.props.rowHeight}
-            valueFilter={this.props.valueFilter || {}}
-            sorter={this.props.sorters}
-            menuLimit={this.props.menuLimit}
-            setValuesInFilter={this.props.setValuesInFilter.bind(this)}
-            addValuesToFilter={this.props.addValuesToFilter.bind(this)}
-            moveFilterBoxToTop={this.props.moveFilterBoxToTop.bind(this)}
-            removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
-            zIndices = {this.props.zIndices}
-            maxZIndex = {this.props.maxZIndex} 
-        />
-          )
-        })
-      }
-      </div>
-    </td>
-      
-    )
-
-  }
-
-}
-
-
-AttributesArea.propTypes = {
-  attrList: PropTypes.array.isRequired,
-  allAttributes: PropTypes.array.isRequired,
-  classes: PropTypes.string,
-  zIndices: PropTypes.object,
-  maxZIndex: PropTypes.number,
-};
 
 class PivotTableUI extends React.PureComponent {
   constructor(props) {
@@ -811,7 +658,7 @@ class PivotTableUI extends React.PureComponent {
 
   makeClassifiedDnDCell(items, classes) {
 
-    const filterAttrs = Object.keys(this.props.valueFilter["Select Attributes"] || {});
+    const filterAttrs = Object.keys(this.props.valueFilter[this.props.searchName] || {});
     const remainAttributes = filterAttrs.length === 0? 
     items: items.filter(x=>filterAttrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1);
     const attrList = filterAttrs.length === 0 ? this.props.attrCategory : [
@@ -822,13 +669,33 @@ class PivotTableUI extends React.PureComponent {
     ]
 
     const rowHeight = this.unusedRowRef.current ? this.unusedRowRef.current.clientHeight : 0;
-    
-      return ( <AttributesArea
-        attrList = {attrList}
+    const classfiedAttrs = attrList.reduce((prev, cur)=>{
+      prev.push.apply(prev, getAllAttributes(cur))
+      return prev;
+},[]);
+    const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
+    const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
+    // const newAttrList = attrList.slice(0);
+    if (unclassfiedAttrs.length > 0){
+      attrList.push({
+        name: this.props.unclassifiedAttrName,
+        attributes: unclassfiedAttrs
+      })
+    }
+
+return (<td className={classes + " pvtCategoryArea"}>
+  <div className="pvtCategoryContainer">
+  {
+    attrList.map((attrDict, i)=>{
+      return(<CategoryCard
+        key = {attrDict.name}
+        attrDict = {attrDict}
         classes = {classes}
         allAttributes = {remainAttributes}
-        unclassifiedAttrName = {this.props.unclassifiedAttrName}
-        categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
+        defaultOpen = {i === 0}
+        attrLabel = {this.props.attrLabel}
+        // unclassifiedAttrName = {this.props.unclassifiedAttrName}
+        // categoryLevel = {1}
         attrOrder = {this.props.attrOrder}
         attrValues={this.state.attrValues}
         rowHeight = {rowHeight}
@@ -841,10 +708,38 @@ class PivotTableUI extends React.PureComponent {
         removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
         zIndices = {this.state.zIndices}
         maxZIndex = {this.state.maxZIndex} 
-    />)
-  
+    />
+      )
+    })
   }
+  </div>
+</td>
+  
+)
 
+    
+  //     return ( <AttributesArea
+  //       attrList = {attrList}
+  //       classes = {classes}
+  //       allAttributes = {remainAttributes}
+  //       unclassifiedAttrName = {this.props.unclassifiedAttrName}
+  //       categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
+  //       attrOrder = {this.props.attrOrder}
+  //       attrValues={this.state.attrValues}
+  //       rowHeight = {rowHeight}
+  //       valueFilter={this.props.valueFilter || {}}
+  //       sorter={this.props.sorters}
+  //       menuLimit={this.props.menuLimit}
+  //       setValuesInFilter={this.setValuesInFilter.bind(this)}
+  //       addValuesToFilter={this.addValuesToFilter.bind(this)}
+  //       moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
+  //       removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
+  //       zIndices = {this.state.zIndices}
+  //       maxZIndex = {this.state.maxZIndex} 
+  //   />)
+  
+  // }
+  }
 
   makeDnDCell(items, onChange, classes) {
     const filterAttrs = Object.keys(this.props.valueFilter["Select Attributes"] || {});
@@ -1026,9 +921,17 @@ class PivotTableUI extends React.PureComponent {
     )
     const resetButton = (
       <button 
-      className ="btn btn-secondary"
+      className ="btn btn-custom-primary"
       onClick={()=>{
-        this.sendPropUpdate({valueFilter: {$set: {}}});
+        const curValueFilter  = this.props.valueFilter || {};
+        const searchName = this.props.searchName;
+        const searchFilter = {[searchName]: curValueFilter[searchName] || {}};
+        this.sendPropUpdate({
+          valueFilter: {
+            $set: searchFilter,    
+          },
+        });
+        // this.sendPropUpdate({valueFilter: {$set: {}}});
       }}>Reset Filters</button>
     )
     const rendererCell = (
@@ -1045,35 +948,7 @@ class PivotTableUI extends React.PureComponent {
           }
           setValue={this.propUpdater('rendererName')}
         />
-      {/* {
-        // category level setting
-        this.props.attrClassified?
-        (<div>
-          
-          <div className={"pvtTableOptionLabel"}> 
-          Show category level
-         </div>
-          <Dropdown
-            current={curCategoryLevel}
-            values={subCategoryRange(this.props.maxCategoryLevel)}
-            open={this.isOpen('categorySetter')}
-            zIndex={this.isOpen('categorySetter') ? this.state.maxZIndex + 1 : 1}
-            toggle={() =>
-              this.setState({
-                openDropdown: this.isOpen('categorySetter') ? false :'categorySetter',
-              })
-            }
-            setValue={this.propUpdater('categoryLevel')}
-          />
-        </div>
-        ):<div></div>
-      } */}
        <div className="pvtDropdown">
-       {/* <div className="pvtDropdownCurrent">
-        {
-          searchAttrs
-        }
-       </div> */}
        <div className="pvtButtonContainer">
         {
           resetButton
@@ -1166,6 +1041,7 @@ PivotTableUI.propTypes = Object.assign({}, PivotTable.propTypes, {
   menuLimit: PropTypes.number,
   maxCategoryLevel: PropTypes.number,
   categoryLevel: PropTypes.number,
+
 });
 
 PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
@@ -1176,6 +1052,7 @@ PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
   menuLimit: 500,  
   maxCategoryLevel: 3,
   categoryLevel: 2,
+
 });
 
 export default PivotTableUI;

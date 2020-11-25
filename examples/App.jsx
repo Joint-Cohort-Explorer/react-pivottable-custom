@@ -39,17 +39,25 @@ class PivotTableUISmartWrapper extends React.PureComponent {
 
 export default class App extends React.Component {
     componentWillMount() {
+        const attributes = ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'];
+        //  const attrLabel = attributes.map(x=>{return {[x]:x}});
+        const attrLabel = {};
+        attributes.forEach(attr=>{
+            attrLabel[attr] = attr;
+        });
         this.setState({
             mode: 'demo',
             filename: 'Sample Dataset: Tips',
             pivotState: {
                 data: tips,
                 // Added attributes
+                attrLabel: attrLabel,
                 attrClassified: true,
                 attrCategory:[
                     {
                         name: "Basic information",
-                        attributes: ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'],
+                        attributes: attributes,
+                        // attributes: ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'],
                         subcategory: [
                            {
                             name: "Web",
@@ -86,11 +94,11 @@ export default class App extends React.Component {
                 unclassifiedAttrName: "Others",
                 attrOrder: [],
                 // Orignial
-                rows: ['Address1', 'Address2', 'City', 'State', 'ZIP'],
-                cols: [],
-                aggregatorName: 'Sum over Sum',
+                rows: ['ZIP'],
+                cols: ['Ethnicity'],
+                aggregatorName: 'Count',
                 vals: [],
-                rendererName: 'Grouped Column Chart',
+                rendererName: 'Table',
                 // sorters: {
                 //     Meal: sortAs(['Lunch', 'Dinner']),
                 //     'Day of Week': sortAs([
@@ -108,7 +116,7 @@ export default class App extends React.Component {
                         pivotData.forEachMatchingRecord(filters, function(
                             record
                         ) {
-                            names.push(record.Meal);
+                            names.push(record.Contact_Name);
                         });
                         alert(names.join('\n'));
                     },

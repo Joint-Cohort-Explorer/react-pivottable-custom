@@ -570,13 +570,15 @@ Dropdown Menu - Bootstrap
     position: relative;
 }
 
-.dropdown-toggle{
+.dropdown-toggle, .attr-num-input{
     position: relative;
     background: #f3f6fa7a;
     padding: 5px 10px 5px 10px;
-    font-size: 16px;
+    font-size: 14px;
     border: transparent;
     margin: 0 5px 0 5px;
+    font-weight: 700;
+    border-radius: 5px;
 }
 
 
@@ -587,15 +589,21 @@ Dropdown Menu - Bootstrap
 }
 
 
+.btn-custom-primary{
+
+    background-color: #3f4f75;
+    border: 0;
+    padding: 5px 10px 5px 10px;
+    font-size: 16px;
+    color:white;
+    font-weight: 800;
+    border-radius: 5px;
+}
+
 /* custom component */
 
 .attr-num-input{
-    height: 25px;
     width: 40px;
-    border: transparent;
-    background-color: #f3f6fa7a;
-    margin-right: 5px;
-    text-align: center;
 }
 
 .attr-num-input:focus, .attr-num-input:active{

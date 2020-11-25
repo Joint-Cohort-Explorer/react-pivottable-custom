@@ -554,7 +554,7 @@ const getAllAttributes= (attrDict) => {
  */
 
  const getAttributeReverseMap = (attrCategory) =>{
-   let attrsToCateogry = {};
+   const attrsToCateogry = {};
    attrCategory.forEach(attrDict=>{
      const allAttrs = getAllAttributes(attrDict);
      allAttrs.forEach(attr=>{
