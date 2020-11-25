@@ -10,8 +10,16 @@ Please see [https://github.com/plotly/react-pivottable#readme](https://github.co
 ### 3. Customized the default orders of unused attributes 
 ### 4. Add attribute filters for better user experience when there are more attributes
       - Update: change to search function on the top of the table
+      - Update: fix the problem of `reset filters` will clean searchings
 ### 5. Add unclassfied attributes handler
 ### 6. Add Reset function
+### 7. Add number configuration for each category
+### 8. Add labels for each attributes for hover to show extra information 
+```
+ attrLabe: {[attrName]: "supplementary information"}
+```
+### 9. Add `Show All` button for each category with sub category
+### 10. Customized styling without third-party library
 
 ## Usage 
 ### Configure categories for attributes
