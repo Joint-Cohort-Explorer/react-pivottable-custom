@@ -1,8 +1,21 @@
+/*
+SAS2412
 .pvtUi {
     color: #2a3f5f;
     font-family: Verdana;
     border-collapse: collapse;
 }
+*/
+
+.pvtUi {
+    color: #2a3f5f;
+    font-family: Verdana;
+    border-collapse: collapse;
+    display: block;
+    width: 100%;
+    overflow: auto;
+}
+
 .pvtUi select {
     user-select: none;
     -webkit-user-select: none;
@@ -17,7 +30,9 @@
 
 table.pvtTable {
     /* font-size: 12pt; */
-    font-size: 16px;
+    /* font-size: 16px; */
+	/* smaller font AGB */
+	font-size: 8pt;
     text-align: left;
     border-collapse: collapse;
     margin-top: 3px;
@@ -28,7 +43,9 @@ table.pvtTable thead tr th,
 table.pvtTable tbody tr th {
     /* background-color: #ebf0f8; */
     border: 1px solid #c8d4e3;
-    font-size: 12pt;
+	/* smaller font AGB */
+    /* font-size: 12pt; */
+	font-size: 8pt;
     padding: 5px;
 }
 
@@ -46,6 +63,20 @@ table.pvtTable tbody tr td {
     border: 1px solid #c8d4e3;
     vertical-align: top;
     text-align: right;
+}
+
+/* AGB The next 3 are for highlighting cell to hover/click */
+table.pvtTable tbody tr td:hover {
+    background: #e2e8f0;
+    border-color: #a2b1c6;
+}
+
+table.pvtTable tbody tr td:focus {
+	background-color: #ffdb3a;
+}
+/* AGB yellow Highlight cell when clicked */
+table.pvtTable tbody tr td:active {
+	background-color: yellow;
 }
 
 .pvtTotal,
@@ -67,14 +98,29 @@ table.pvtTable tbody tr td {
     -ms-user-select: none;
 }
 
-.pvtAxisContainer,
+/* separated pvtVals AGB and SAS2412 */
+.pvtAxisContainer {
+	border: 1px solid #a2b1c6;
+    /* background: #f2f5fa; */
+    padding: 5px;
+    min-width: 20px;
+    min-height: 20px;
+}
+/* Added AGB and SAS2412 */
+.pvtScroll {
+	display: flex;
+	flex-wrap: wrap;
+    /* width: 100%; */
+	max-height: 500px;
+    overflow: auto;
+}
+
 .pvtVals {
     border: 1px solid #a2b1c6;
     /* background: #f2f5fa; */
     padding: 5px;
     min-width: 20px;
     min-height: 20px;
-
 }
 
 .pvtRenderers {
@@ -182,7 +228,8 @@ table.pvtTable tbody tr td {
     background: #f3f6fa;
     border: 1px solid #c8d4e3;
     padding: 2px 5px;
-    font-size: 16px;
+    /* AGB reduce font size from 16*/
+	font-size: 12px;
     white-space: nowrap;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
@@ -517,7 +564,7 @@ table.pvtTable tbody tr td {
 .card-title{
     display: inline-block;
     cursor: pointer;
-    font-size:  16px;
+    font-size:  14px;
  }
  
 
@@ -574,7 +621,7 @@ Dropdown Menu - Bootstrap
     position: relative;
     background: #f3f6fa7a;
     padding: 5px 10px 5px 10px;
-    font-size: 14px;
+    font-size: 12px;
     border: transparent;
     margin: 0 5px 0 5px;
     font-weight: 700;

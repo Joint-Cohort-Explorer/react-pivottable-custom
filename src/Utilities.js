@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { prototype } from 'sortablejs';
 
 /*
  * decaffeinate suggestions:
@@ -819,6 +820,7 @@ PivotData.defaultProps = {
   attrClassified: false,
   attrCategory: {},
   attrOrder: [],
+  // unusedAttrOrder: {},
   attrLabel: {},
   unclassifiedAttrName: "Unclassified",
   cols: [],
@@ -839,6 +841,7 @@ PivotData.propTypes = {
   unclassifiedAttrName: PropTypes.string,
   attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
+  // unusedAttrOrder: PropTypes.objectOf(PropTypes.array),
   attrLabel: PropTypes.objectOf(PropTypes.string),
   aggregatorName: PropTypes.string,
   cols: PropTypes.arrayOf(PropTypes.string),

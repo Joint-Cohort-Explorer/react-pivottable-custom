@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
-import {PivotData, sortAs, getSort, getAllAttributes} from './Utilities';
+import {PivotData, sortAs, getSort, getAllAttributes, naturalSort} from './Utilities';
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
@@ -24,10 +24,26 @@ export class DraggableAttribute extends React.Component {
   }
 
   matchesFilter(x) {
-    return x
-      .toLowerCase()
-      .trim()
-      .includes(this.state.filterText.toLowerCase().trim());
+    // change to multiple conditions
+    const allowedSigns = ['>', '<', '=']
+    const filterText = this.state.filterText.toLowerCase().trim();
+    const conditions = filterText.split(',');
+    const containSign = allowedSigns.findIndex(sign=>filterText.includes(sign)) !== -1;
+    let equation="";
+    // let conditions = [""];
+    if(containSign){
+      try {
+        x = parseInt(x, 10);
+        equation = eval(filterText)
+      }catch(e){
+        // ignore error
+      };
+    }
+    // return x
+    //   .toLowerCase()
+    //   .trim()
+    //   .includes(this.state.filterText.toLowerCase().trim());
+    return equation && equation !== "" && !isNaN(x) ? equation: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1;
   }
 
   selectOnly(e, value) {
@@ -296,8 +312,8 @@ export class CategoryCard extends React.Component {
     super(props);
     this.state = {
       open: this.props.defaultOpen,
-      showAttrNums: this.props.showAttrNums || 10,
-      attrOrder: {},
+	  // Bump up to 500 AGB
+      showAttrNums: this.props.showAttrNums || 500,
       showMenu: false,
       mouseOver: false,
       selectCategory: {},
@@ -318,24 +334,36 @@ export class CategoryCard extends React.Component {
   }
 
  
+ 
 
   makeCateogryDnDCell(attrDict, level){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
     // const name = attrDict.name;
-    const key = `${level}-${attrDict.name}`;
+    // const key = `${level}-${attrDict.name}`;
     // const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
+
+    const key = attrDict.name; // assume no duplicate;
     const curAttributes = attrDict.attributes;
     const new_attrs = curAttributes && curAttributes.length > 0 ?
-                      curAttributes.filter(findAttr).sort(sortAs(this.state.attrOrder[key] || this.props.attrOrder)).slice(0, this.state.showAttrNums)
+                      curAttributes.filter(findAttr).sort(sortAs(this.props.attrOrder || naturalSort)).slice(0, this.state.showAttrNums)
                       : [];
 
+    // const onChangeAttr = (key) => (
+    //   order => {
+    //     const newOrders = Object.assign({}, this.state.attrOrder);
+    //     newOrders[key] = order
+    //     this.setState({attrOrder: newOrders})
+    //   }
+    //   );
+    // const leastLength = this.props.attrOrder ? this.props.attrOrder.legn
     const onChangeAttr = (key) => (
-      order => {
-        const newOrders = Object.assign({}, this.state.attrOrder);
-        newOrders[key] = order
-        this.setState({attrOrder: newOrders})
+      order=>{
+        // console.log(key, order);
+        if(order && order.length >= new_attrs.length){
+          this.props.setUnusedAttrOrder(key, order);
+        }
       }
-      );
+    )
 
       const style = this.state.open ? {"width": "100%", "padding": "10px"}: {"width": "100%"};
         return (<Sortable
@@ -470,7 +498,7 @@ export class CategoryCard extends React.Component {
                </span>): ""
              }
 
-            <input className= 'attr-num-input' type='number' min = {0} defaultValue={10} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} />
+            <input className= 'attr-num-input' type='number' min = {0} defaultValue={500} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} />
      </div>)
   }
 
@@ -542,7 +570,8 @@ class PivotTableUI extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      unusedOrder: this.props.attrOrder,
+      // unusedAttrOrder: this.props.attrOrder,
+      unusedAttrOrder: {},
       classifiedUnusedOrder: {},
       zIndices: {},
       maxZIndex: 1000,
@@ -558,6 +587,7 @@ class PivotTableUI extends React.PureComponent {
   }
 
   componentDidUpdate() {
+   
     this.materializeInput(this.props.data);
   }
 
@@ -605,6 +635,30 @@ class PivotTableUI extends React.PureComponent {
     return value => this.sendPropUpdate({[key]: {$set: value}});
   }
 
+  setUnusedAttrOrder(key, order){
+    // console.log(key, order);
+
+    const newAttrOrder = Object.assign({}, this.state.unusedAttrOrder);
+    const newOrder = order.slice(0) || [];
+    const origOrder = newAttrOrder[key] || [];
+
+    const notInNewOrder = origOrder.filter(item=>order.findIndex(newItem=>String(newItem).toLowerCase() === String(item).toLowerCase()) === -1)
+    // const newOrder = order.push.apply(order, notInNewOrder);
+    // console.log(newOrder, notInNewOrder);
+    newOrder.push.apply(newOrder, notInNewOrder);
+    newAttrOrder[key] = newOrder;
+    this.setState({unusedAttrOrder: newAttrOrder});
+  }
+
+  // setUnusedAttrOrder(key, order){
+  //   console.log("unusedAttrOrder", this.props.unusedAttrOrder, key, order);
+  //   this.sendPropUpdate({
+  //     unusedAttrOrder: {
+  //       [key]:{$set: order}
+  //     }
+  //   })
+  // }
+
   setValuesInFilter(attribute, values) {
     this.sendPropUpdate({
       valueFilter: {
@@ -617,6 +671,7 @@ class PivotTableUI extends React.PureComponent {
       },
     });
   }
+
 
   addValuesToFilter(attribute, values) {
     if (attribute in this.props.valueFilter) {
@@ -658,6 +713,7 @@ class PivotTableUI extends React.PureComponent {
 
   makeClassifiedDnDCell(items, classes) {
 
+
     const filterAttrs = Object.keys(this.props.valueFilter[this.props.searchName] || {});
     const remainAttributes = filterAttrs.length === 0? 
     items: items.filter(x=>filterAttrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1);
@@ -670,23 +726,24 @@ class PivotTableUI extends React.PureComponent {
 
     const rowHeight = this.unusedRowRef.current ? this.unusedRowRef.current.clientHeight : 0;
     const classfiedAttrs = attrList.reduce((prev, cur)=>{
-      prev.push.apply(prev, getAllAttributes(cur))
-      return prev;
-},[]);
-    const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
-    const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
-    // const newAttrList = attrList.slice(0);
-    if (unclassfiedAttrs.length > 0){
-      attrList.push({
-        name: this.props.unclassifiedAttrName,
-        attributes: unclassfiedAttrs
-      })
-    }
+          prev.push.apply(prev, getAllAttributes(cur))
+          return prev;
+    },[]);
+      const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
+      const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
+      // const newAttrList = attrList.slice(0);
+      if (unclassfiedAttrs.length > 0){
+        attrList.push({
+          name: this.props.unclassifiedAttrName,
+          attributes: unclassfiedAttrs
+        })
+      }
 
 return (<td className={classes + " pvtCategoryArea"}>
   <div className="pvtCategoryContainer">
   {
     attrList.map((attrDict, i)=>{
+
       return(<CategoryCard
         key = {attrDict.name}
         attrDict = {attrDict}
@@ -696,13 +753,14 @@ return (<td className={classes + " pvtCategoryArea"}>
         attrLabel = {this.props.attrLabel}
         // unclassifiedAttrName = {this.props.unclassifiedAttrName}
         // categoryLevel = {1}
-        attrOrder = {this.props.attrOrder}
+        attrOrder = {this.state.unusedAttrOrder[attrDict.name] || this.props.attrOrder || []}
         attrValues={this.state.attrValues}
         rowHeight = {rowHeight}
         valueFilter={this.props.valueFilter || {}}
         sorter={this.props.sorters}
         menuLimit={this.props.menuLimit}
         setValuesInFilter={this.setValuesInFilter.bind(this)}
+        setUnusedAttrOrder = {this.setUnusedAttrOrder.bind(this)}
         addValuesToFilter={this.addValuesToFilter.bind(this)}
         moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
         removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
@@ -760,7 +818,7 @@ return (<td className={classes + " pvtCategoryArea"}>
         {remainAttributes.map(x => (
           <DraggableAttribute
             name={x}
-            label = {x} // for tests
+            label = {this.props.attrLabel[x] || ""} // for tests
             key={x}
             attrValues={this.state.attrValues[x]}
             valueFilter={this.props.valueFilter[x] || {}}
@@ -876,7 +934,12 @@ return (<td className={classes + " pvtCategoryArea"}>
 
     const unusedLength = unusedAttrs.reduce((r, e) => r + e.length, 0);
     const horizUnused = unusedLength < this.props.unusedOrientationCutoff;
-
+	
+	// Added pvtScroll by SAS2412 
+	// var unusedAttrsCell = this.makeDnDCell(unusedAttrs, function (order) {
+	// 	return _this8.setState({ unusedOrder: order });
+	// }, 'pvtAxisContainer pvtUnused pvtScroll ' + (horizUnused ? 'pvtHorizList' : 'pvtVertList'));
+	  
     const unusedAttrsCell = this.props.attrClassified? 
     this.makeClassifiedDnDCell(unusedAttrs,
       `pvtAxisContainer pvtUnused ${
