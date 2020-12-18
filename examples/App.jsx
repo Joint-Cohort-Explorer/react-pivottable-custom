@@ -94,8 +94,8 @@ export default class App extends React.Component {
                 unclassifiedAttrName: "Others",
                 attrOrder: [],
                 // Orignial
-                rows: ['ZIP'],
-                cols: ['Ethnicity'],
+                rows: ['Address1'],
+                cols: ['Address2'],
                 aggregatorName: 'Count',
                 vals: [],
                 rendererName: 'Table',

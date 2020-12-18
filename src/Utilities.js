@@ -604,7 +604,31 @@ class PivotData {
   }
 
   filter(record) {
+    // 1. get grouped attributes
+    // 2. filter: !A=> return false; grouped: 
+    //  for every group: !A && !B => return false
+    const groupedValue = {};
+    for (const group in this.props.attrGroups){
+      // this.props.attrGroups[group] = {attr:true}
+      let inFilteredValue = 0;
+      const groupedAttrsNum = Object.keys(this.props.attrGroups[group]).length;
+      for (const attrName in this.props.attrGroups[group]){
+        // console.log('in test group', record[attrName])
+        groupedValue[attrName] = true;
+        if(this.props.valueFilter[attrName] && record[attrName] in this.props.valueFilter[attrName]){
+          inFilteredValue++;
+        }
+      }
+
+      if(inFilteredValue === groupedAttrsNum){
+        return false;
+      }
+    }
+
     for (const k in this.props.valueFilter) {
+      if (k in groupedValue){
+        continue;
+      }
       if (record[k] in this.props.valueFilter[k]) {
         return false;
       }
@@ -822,6 +846,7 @@ PivotData.defaultProps = {
   attrOrder: [],
   // unusedAttrOrder: {},
   attrLabel: {},
+  attrGroups: {},
   unclassifiedAttrName: "Unclassified",
   cols: [],
   rows: [],
@@ -841,6 +866,7 @@ PivotData.propTypes = {
   unclassifiedAttrName: PropTypes.string,
   attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
+  attrGroups: PropTypes.objectOf(PropTypes.objectOf(PropTypes.bool)),
   // unusedAttrOrder: PropTypes.objectOf(PropTypes.array),
   attrLabel: PropTypes.objectOf(PropTypes.string),
   aggregatorName: PropTypes.string,

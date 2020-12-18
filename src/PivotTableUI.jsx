@@ -5,6 +5,7 @@ import {PivotData, sortAs, getSort, getAllAttributes, naturalSort} from './Utili
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
+import ConfigModal from './PivotTableModal';
 
 /* eslint-disable react/prop-types */
 // eslint can't see inherited propTypes!
@@ -221,10 +222,10 @@ export class DraggableAttribute extends React.Component {
 
         {this.state.open ? this.getFilterBox() : null}
         </li>) : (<div style={{position: "relative"}}>
-        <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
-                    <SearchButton/>
-          </span>
-        {this.state.open ? this.getFilterBox() : null}
+                  <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
+                              <SearchButton/>
+                    </span>
+                  {this.state.open ? this.getFilterBox() : null}
          
           
           
@@ -578,6 +579,7 @@ class PivotTableUI extends React.PureComponent {
       openDropdown: false,
       attrValues: {},
       materializedInput: [],
+      showConfig: false,
     };
     this.unusedRowRef = React.createRef();
   }
@@ -650,14 +652,31 @@ class PivotTableUI extends React.PureComponent {
     this.setState({unusedAttrOrder: newAttrOrder});
   }
 
-  // setUnusedAttrOrder(key, order){
-  //   console.log("unusedAttrOrder", this.props.unusedAttrOrder, key, order);
-  //   this.sendPropUpdate({
-  //     unusedAttrOrder: {
-  //       [key]:{$set: order}
-  //     }
-  //   })
-  // }
+  setGroupValue(group, valueObject, origGroup){
+    if(origGroup && origGroup !== "" 
+      && this.props.attrGroups 
+      && origGroup in this.props.attrGroups 
+      && origGroup !== group){
+      const newAttrGroups = Object.assign({}, this.props.attrGroups);
+      delete newAttrGroups[origGroup];
+      // if(Object.keys(valueObject).length > 0){
+      //   newAttrGroups[group] = valueObject;
+      // }
+      this.sendPropUpdate({
+        attrGroups:{
+          $set: newAttrGroups
+        }
+      });
+    } else {
+      this.sendPropUpdate({
+        attrGroups:{
+          [group]:{
+            $set: valueObject
+          }
+        }
+      });
+    }
+  }
 
   setValuesInFilter(attribute, values) {
     this.sendPropUpdate({
@@ -686,7 +705,6 @@ class PivotTableUI extends React.PureComponent {
     } else {
       this.setValuesInFilter(attribute, values);
     }
-    // console.log(this.props.valueFilter)
   }
 
   removeValuesFromFilter(attribute, values) {
@@ -709,7 +727,13 @@ class PivotTableUI extends React.PureComponent {
     return this.state.openDropdown === dropdown;
   }
   
+  closeConfigModal(){
+    this.setState({showConfig: false});
+  }
 
+  showConfigModal(){
+    this.setState({showConfig: true});
+  }
 
   makeClassifiedDnDCell(items, classes) {
 
@@ -774,30 +798,7 @@ return (<td className={classes + " pvtCategoryArea"}>
 </td>
   
 )
-
-    
-  //     return ( <AttributesArea
-  //       attrList = {attrList}
-  //       classes = {classes}
-  //       allAttributes = {remainAttributes}
-  //       unclassifiedAttrName = {this.props.unclassifiedAttrName}
-  //       categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
-  //       attrOrder = {this.props.attrOrder}
-  //       attrValues={this.state.attrValues}
-  //       rowHeight = {rowHeight}
-  //       valueFilter={this.props.valueFilter || {}}
-  //       sorter={this.props.sorters}
-  //       menuLimit={this.props.menuLimit}
-  //       setValuesInFilter={this.setValuesInFilter.bind(this)}
-  //       addValuesToFilter={this.addValuesToFilter.bind(this)}
-  //       moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
-  //       removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
-  //       zIndices = {this.state.zIndices}
-  //       maxZIndex = {this.state.maxZIndex} 
-  //   />)
-  
-  // }
-  }
+}
 
   makeDnDCell(items, onChange, classes) {
     const filterAttrs = Object.keys(this.props.valueFilter["Select Attributes"] || {});
@@ -997,6 +998,14 @@ return (<td className={classes + " pvtCategoryArea"}>
         // this.sendPropUpdate({valueFilter: {$set: {}}});
       }}>Reset Filters</button>
     )
+
+    const configButton = ( <button 
+      className ="btn btn-custom-primary"
+      onClick={this.showConfigModal.bind(this)}
+      >
+        Show Config
+      </button>)
+
     const rendererCell = (
       <td className="pvtRenderers">
         <Dropdown
@@ -1013,9 +1022,10 @@ return (<td className={classes + " pvtCategoryArea"}>
         />
        <div className="pvtDropdown">
        <div className="pvtButtonContainer">
-        {
-          resetButton
-        }
+        {resetButton}
+       </div>
+       <div className="pvtButtonContainer">
+        {configButton}
        </div>
        </div>
       </td>
@@ -1054,9 +1064,35 @@ return (<td className={classes + " pvtCategoryArea"}>
       </td>
     );
 
+    console.log('test attrGroups', this.props.attrGroups);
+    const TableConfigModal = (
+      <ConfigModal
+        show = {this.state.showConfig}
+        handleOpen = {this.showConfigModal.bind(this)}
+        handleClose = {this.closeConfigModal.bind(this)} 
+        zIndex={this.state.maxZIndex + 1}
+        groups = {this.props.attrGroups}
+        // setValuesInFilter={this.setValuesInFilter.bind(this)}
+        // addValuesToFilter={this.addValuesToFilter.bind(this)}
+        // moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
+        // removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
+        // changeGroupName = {this.changeGroupName.bind(this)}
+        // addValueToGroup = {this.addValueToGroup.bind(this)}
+        // removeValuesFromGroup = {this.removeValuesFromGroup.bind(this)}
+        setGroupValue = {this.setGroupValue.bind(this)}
+        values = {Object.keys(this.state.attrValues)
+        .filter(
+          e =>
+            !this.props.hiddenAttributes.includes(e) &&
+            !this.props.hiddenFromDragDrop.includes(e)
+        )}
+      />
+    )
+
     if (horizUnused) {
       return (
-        <table className="pvtUi">
+        <div>
+          <table className="pvtUi">
           <tbody onClick={() => this.setState({openDropdown: false})}>
              {searchCells}
             <tr ref = {this.unusedRowRef}>
@@ -1073,11 +1109,15 @@ return (<td className={classes + " pvtCategoryArea"}>
             </tr>
           </tbody>
         </table>
+            {TableConfigModal}
+          </div>
       );
+        
     }
 
     return (
-      <table className="pvtUi">
+     <div>
+        <table className="pvtUi">
         <tbody onClick={() => this.setState({openDropdown: false})}>
           <tr>
             {rendererCell}
@@ -1091,6 +1131,8 @@ return (<td className={classes + " pvtCategoryArea"}>
           </tr>
         </tbody>
       </table>
+      {TableConfigModal}
+     </div>
     );
   }
 }
