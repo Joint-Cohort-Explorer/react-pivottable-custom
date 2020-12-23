@@ -30,14 +30,20 @@ export class DraggableAttribute extends React.Component {
     const conditions = filterText.split(',');
     const containSign = allowedSigns.findIndex(sign=>filterText.includes(sign)) !== -1;
     let equation="";
-    // let conditions = [""];
     if(containSign){
-      try {
-        x = parseInt(x, 10);
-        equation = eval(filterText)
-      }catch(e){
-        // ignore error
-      };
+        try {
+          if(typeof x === "string"){
+            // try to convert to number
+            // console.log(x)
+            const numerValue = parseFloat(x, 10);
+            if(!isNaN(numerValue)){
+              x = numerValue;
+            }
+          }
+            equation = eval(filterText)
+          }catch(e){
+            // ignore error
+        };
     }
     // return x
     //   .toLowerCase()
