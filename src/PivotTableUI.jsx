@@ -33,15 +33,17 @@ export class DraggableAttribute extends React.Component {
     if(containSign){
         try {
           if(typeof x === "string"){
+            x = x.toLowerCase();
             // try to convert to number
             // console.log(x)
-            const numerValue = parseFloat(x, 10);
-            if(!isNaN(numerValue)){
-              x = numerValue;
+            if(!isNaN(x)){
+              x = parseFloat(x, 10);
             }
           }
             equation = eval(filterText)
+            // console.log(x, filterText, equation)
           }catch(e){
+            // console.log(e)
             // ignore error
         };
     }
@@ -49,7 +51,7 @@ export class DraggableAttribute extends React.Component {
     //   .toLowerCase()
     //   .trim()
     //   .includes(this.state.filterText.toLowerCase().trim());
-    return equation && equation !== "" && !isNaN(x) ? equation: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1;
+    return equation && equation !== "" ? equation: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1;
   }
 
   selectOnly(e, value) {
