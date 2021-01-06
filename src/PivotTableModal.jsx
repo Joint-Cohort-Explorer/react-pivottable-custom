@@ -1,18 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import Sortable from 'react-sortablejs';
+import Sortable from 'react-sortablejs';
 // import Draggable from 'react-draggable';
+
+function getUngroupedValues(allValues, groups){
+  const groupedValues = [];
+  for (const [key, values] of Object.entries(groups)){
+    groupedValues.push.apply(groupedValues, Object.keys(values));
+  }
+  const ungroupedValues = allValues.filter(value=>groupedValues.findIndex(groupedValue=>String(value).toLowerCase() === String(groupedValue).toLowerCase()) === -1);
+  return ungroupedValues;
+}
 
 export default class ConfigModal extends React.Component{
     constructor(props){
         super(props);
+        // const ungroupedValues = getUngroupedValues(this.props.values.slice(0), this.props.groups);
+        // console.log('in constructors', ungroupedValues)
         this.state = {
             open: false, 
+            show: false,
             filterText: '', 
             selectGroup: '',
             alterGroupName: '',
             selectValues: {},
             errors: {},
+            ungroupedValues: [],
         };
     }
 
@@ -21,8 +34,6 @@ export default class ConfigModal extends React.Component{
     }
 
     matchesFilter(x) {
-        // change to multiple conditions
-        // console.log(x);
         return x
           .toLowerCase()
           .trim()
@@ -41,7 +52,7 @@ export default class ConfigModal extends React.Component{
       }
 
       saveGroup(){
-          console.log('in modal', this.state)
+          // console.log('in modal', this.state);
           const origName = this.state.selectGroup;
           const groupName = this.state.alterGroupName;
           const newValues = Object.assign({}, this.state.selectValues);
@@ -181,6 +192,36 @@ export default class ConfigModal extends React.Component{
       }
     
 
+      // todo: add one click delete
+    makeDnDAttrs(groupName, onChangeAttr, groupValues){
+
+        return(<Sortable
+          key = {groupName}
+          options={{
+            group: 'shared',
+            ghostClass: 'pvtPlaceholder',
+            filter: '.pvtFilterBox',
+            preventOnFilter: false,
+          }}
+        tag="div"
+        onChange={onChangeAttr}
+        // onChange={onChangeAttr(key)}
+        >
+      {groupValues.map(value=>(<li 
+        data-id = {value} 
+        key={value} 
+      >
+    
+        <span className="pvtAttr" style ={{backgroundColor: this.props.attrToGroupColor[value]}}>
+            {value} 
+            {/* <span className="pvtTriangle"> {' '} &times;</span> */}
+        </span>
+        
+
+      </li>))}
+    </Sortable>)
+    }
+    
     renderGroupDetails(groupName, groupAttrObject){
         // const groupValues = Object.keys(groupAttrObject).reduce(res, item=>{
         //     if(groupAttrObject[item] === true){
@@ -191,28 +232,55 @@ export default class ConfigModal extends React.Component{
 
         const groupValues = Object.keys(groupAttrObject);
         
+        const onChangeAttr = order => {
+          console.log(order);
+          const newValues = {};
+          order.forEach(attr=>newValues[attr]= true);
+          this.props.setGroupValue(groupName, newValues, "");
+        }
         return(<div key= {groupName} className="modal-group-div">
+
             <div >
-            <span style={{fontSize: "18px"}}>{groupName}</span>
-            <button 
-                className="pvtButton"
-                style={{float: "right"}}
-                onClick={()=>{
-                this.setState({open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject});
-            }}>Edit Group </button>
+            <span style={{fontSize: "14px"}}>{groupName}</span>
+              <button 
+                  className="pvtButton"
+                  style={{float: "right"}}
+                  onClick={()=>{
+                  this.setState({open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject});
+              }}>Edit Group </button>
             </div>
          
-            <div>
-            {groupValues.map(value=>(<span key={value} className="modal-attr-span">{value}</span>))}
-            </div>
+          
+
+           {this.makeDnDAttrs(groupName, onChangeAttr, groupValues)}
+            {/* {groupValues.map(value=>(<span key={value} className="modal-attr-span">{value}</span>))} */}
            
         </div>)
     }
 
 
+  
+    componentWillReceiveProps(nextProps){
+      const allValues =  nextProps.values.slice(0);
+      const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
+      this.setState({ungroupedValues: ungroupedValues});
+      // if(this.props.groups !== nextProps.groups && this.props.values !== nextProps.values){
+        
+      //   const allValues =  nextProps.values.slice(0);
+      //   const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
+      //   this.setState({ungroupedValues: ungroupedValues});
+      // }
+    }
+
     renderGroups(){
 
+        const onChangeUngrouped = order=>this.setState({ungroupedValues:order});
+
         return(<div>
+            <div className="modal-group-div ungrouped-div">
+             <span style={{fontSize: "14px"}}>Ungrouped Attributes</span>
+              {this.makeDnDAttrs('Ungrouped Attrs', onChangeUngrouped, this.state.ungroupedValues)}
+            </div>
             {Object.keys(this.props.groups).map(group=>{
                 return this.renderGroupDetails(group, this.props.groups[group])
             })}
@@ -220,27 +288,31 @@ export default class ConfigModal extends React.Component{
                  className="pvtButton"
                 //  style={{float: "right"}}
                 onClick={()=>{
-                this.setState({open: true, selectGroup: "", alterGroupName:"", selectValues:{}})
+                const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
+                const defaultName = `group-${groupNum + 1}`
+                this.setState({open: true, selectGroup: "", alterGroupName: defaultName, selectValues:{}})
             }}>Add New Group</button>
         </div>)
     }
 
 
     render(){
-        return this.props.show? (<div className="modal" style = {{zIndex: this.props.zIndex || 1000}}>
-
-            <div className="modal-content">
-                <div className="modal-header">
-                  <span className="close" onClick={()=>{
-                      this.closeEditMode();
-                      this.props.handleClose();
-                  }}>&times;</span>
-                </div>
+      // className="modal" style = {{zIndex: this.props.zIndex || 1000}}
+        return (<div className="pvtCategoryContainer pvtSetting">
+          <div className="pvtCateogryCard">
+          <div className="card-header">
+            <div className="card-title"
+                style = {{display: "inline-block", minWidth:"40%"}}
+                onClick={()=>this.setState({show: !this.state.show})}>
+              Set OR Groups
+            </div>
+          </div>
+          {this.state.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
                 {this.state.open && this.getFilterBox()}
-                {/* {this.getFilterBox()} */}
-            </div>
+            </div>)}
       </div>
-      ): null;
+        </div>
+      );
     }
 }

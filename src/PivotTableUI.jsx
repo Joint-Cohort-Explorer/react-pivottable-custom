@@ -7,6 +7,15 @@ import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
 import ConfigModal from './PivotTableModal';
 
+const colors = [
+  "#ECF5FF",
+  "#D2E9FF",
+  "#C4E1FF",
+  "#ACD6FF",
+  "#97CBFF",
+  "84C1FF",
+  "ECFFFF",
+]
 /* eslint-disable react/prop-types */
 // eslint can't see inherited propTypes!
 
@@ -202,6 +211,10 @@ export class DraggableAttribute extends React.Component {
     visibility: this.state.hover ? 'visible': 'hidden'
   };
 
+  const attrSpanStyle =  this.props.attrToGroupColor &&  this.props.attrToGroupColor[this.props.name]?{
+    backgroundColor: this.props.attrToGroupColor[this.props.name]
+  }: {};
+
     return (
       !this.props.searchDropDown ? ( <li data-id={this.props.name}
         onMouseOver={this.handleMouseOver.bind(this)}
@@ -210,7 +223,7 @@ export class DraggableAttribute extends React.Component {
         onMouseDown = {()=>{this.setState({hover: false})}}
         onMouseUp={()=>{this.setState({hover: false})}}
       >
-        <span className={'pvtAttr tooltip ' + filtered}>
+        <span className={'pvtAttr tooltip ' + filtered} style={attrSpanStyle}>
           {this.props.name}
           <span
             className="pvtTriangle"
@@ -405,6 +418,7 @@ export class CategoryCard extends React.Component {
                               removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
                               rowHeight = {this.props.rowHeight}
+                              attrToGroupColor = {this.props.attrToGroupColor}
                             />
                           )):(
                           this.state.open?<span>No Attributes Here.</span>:
@@ -641,7 +655,11 @@ class PivotTableUI extends React.PureComponent {
   }
 
   propUpdater(key) {
-    return value => this.sendPropUpdate({[key]: {$set: value}});
+   
+    return value => {
+      // console.log('propUpdater', key, value);
+      this.sendPropUpdate({[key]: {$set: value}});
+    }
   }
 
   setUnusedAttrOrder(key, order){
@@ -660,19 +678,46 @@ class PivotTableUI extends React.PureComponent {
   }
 
   setGroupValue(group, valueObject, origGroup){
+    const nums = this.props.attrGroups? Object.keys(this.props.attrGroups).length : 0;
+    if(!group || group === ""){
+      group = `group-${nums + 1}`;
+      
+    }
+    // add a color to new group
+    const newAttrGroupColors = Object.assign({}, this.props.attrGroupsColor);
+    const origColor = (origGroup && origGroup !=="") ? newAttrGroupColors[origGroup] : undefined;
+    if (origColor && origColor !== undefined){
+      delete newAttrGroupColors[origGroup];
+    }
+    if(!this.props.attrGroups[group] || (!newAttrGroupColors[group])){
+      newAttrGroupColors[group] = origColor && origColor !== undefined? origColor: colors[nums % colors.length];
+    }
+    const curColor =  newAttrGroupColors[group];
+    const newAttrToGroupColor = Object.assign({}, this.props.attrToGroupColor);
+    for (const [key, value] of Object.entries(valueObject)){
+      newAttrToGroupColor[key] = curColor;
+    }
+
     if(origGroup && origGroup !== "" 
       && this.props.attrGroups 
       && origGroup in this.props.attrGroups 
       && origGroup !== group){
       const newAttrGroups = Object.assign({}, this.props.attrGroups);
       delete newAttrGroups[origGroup];
-      // if(Object.keys(valueObject).length > 0){
-      //   newAttrGroups[group] = valueObject;
-      // }
+      if(Object.keys(valueObject).length > 0){
+        newAttrGroups[group] = valueObject;
+      }
       this.sendPropUpdate({
         attrGroups:{
           $set: newAttrGroups
+        },
+        attrToGroupColor:{
+          $set: newAttrToGroupColor
+        },
+        attrGroupsColor: {
+          $set:  newAttrGroupColors
         }
+        // attrToGroups:
       });
     } else {
       this.sendPropUpdate({
@@ -680,6 +725,12 @@ class PivotTableUI extends React.PureComponent {
           [group]:{
             $set: valueObject
           }
+        },
+        attrToGroupColor:{
+          $set: newAttrToGroupColor
+        },
+        attrGroupsColor: {
+          $set:  newAttrGroupColors
         }
       });
     }
@@ -797,6 +848,7 @@ return (<td className={classes + " pvtCategoryArea"}>
         removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
         zIndices = {this.state.zIndices}
         maxZIndex = {this.state.maxZIndex} 
+        attrToGroupColor = {this.props.attrToGroupColor}
     />
       )
     })
@@ -837,6 +889,7 @@ return (<td className={classes + " pvtCategoryArea"}>
             moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
             removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
             zIndex={this.state.zIndices[x] || this.state.maxZIndex}
+            attrToGroupColor = {this.props.attrToGroupColor}
           />
         ))}
       </Sortable>
@@ -990,6 +1043,7 @@ return (<td className={classes + " pvtCategoryArea"}>
               </td>
       </tr>
     )
+
     const resetButton = (
       <button 
       className ="btn btn-custom-primary"
@@ -1006,12 +1060,12 @@ return (<td className={classes + " pvtCategoryArea"}>
       }}>Reset Filters</button>
     )
 
-    const configButton = ( <button 
-      className ="btn btn-custom-primary"
-      onClick={this.showConfigModal.bind(this)}
-      >
-        Show Config
-      </button>)
+    // const configButton = ( <button 
+    //   className ="btn btn-custom-primary"
+    //   onClick={this.showConfigModal.bind(this)}
+    //   >
+    //     Show Config
+    //   </button>)
 
     const rendererCell = (
       <td className="pvtRenderers">
@@ -1031,9 +1085,9 @@ return (<td className={classes + " pvtCategoryArea"}>
        <div className="pvtButtonContainer">
         {resetButton}
        </div>
-       <div className="pvtButtonContainer">
+       {/* <div className="pvtButtonContainer">
         {configButton}
-       </div>
+       </div> */}
        </div>
       </td>
     );
@@ -1071,7 +1125,7 @@ return (<td className={classes + " pvtCategoryArea"}>
       </td>
     );
 
-    console.log('test attrGroups', this.props.attrGroups);
+    // console.log('test attrGroups', this.props.attrGroups);
     const TableConfigModal = (
       <ConfigModal
         show = {this.state.showConfig}
@@ -1079,13 +1133,7 @@ return (<td className={classes + " pvtCategoryArea"}>
         handleClose = {this.closeConfigModal.bind(this)} 
         zIndex={this.state.maxZIndex + 1}
         groups = {this.props.attrGroups}
-        // setValuesInFilter={this.setValuesInFilter.bind(this)}
-        // addValuesToFilter={this.addValuesToFilter.bind(this)}
-        // moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
-        // removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
-        // changeGroupName = {this.changeGroupName.bind(this)}
-        // addValueToGroup = {this.addValueToGroup.bind(this)}
-        // removeValuesFromGroup = {this.removeValuesFromGroup.bind(this)}
+        attrToGroupColor = {this.props.attrToGroupColor}
         setGroupValue = {this.setGroupValue.bind(this)}
         values = {Object.keys(this.state.attrValues)
         .filter(
@@ -1099,9 +1147,16 @@ return (<td className={classes + " pvtCategoryArea"}>
     if (horizUnused) {
       return (
         <div>
+       
           <table className="pvtUi">
           <tbody onClick={() => this.setState({openDropdown: false})}>
-             {searchCells}
+             {searchCells} 
+             <tr>
+               <td></td>
+               <td className="pvtAxisContainer pvtCategoryArea">
+                 {TableConfigModal}
+             </td>
+             </tr>
             <tr ref = {this.unusedRowRef}>
               {rendererCell}
               {unusedAttrsCell}
@@ -1116,7 +1171,7 @@ return (<td className={classes + " pvtCategoryArea"}>
             </tr>
           </tbody>
         </table>
-            {TableConfigModal}
+         
           </div>
       );
         
@@ -1124,6 +1179,7 @@ return (<td className={classes + " pvtCategoryArea"}>
 
     return (
      <div>
+           {TableConfigModal}
         <table className="pvtUi">
         <tbody onClick={() => this.setState({openDropdown: false})}>
           <tr>
@@ -1138,7 +1194,7 @@ return (<td className={classes + " pvtCategoryArea"}>
           </tr>
         </tbody>
       </table>
-      {TableConfigModal}
+  
      </div>
     );
   }

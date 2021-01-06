@@ -20,6 +20,8 @@ Please see [https://github.com/plotly/react-pivottable#readme](https://github.co
 ```
 ### 9. Add `Show All` button for each category with sub category
 ### 10. Customized styling without third-party library
+### 11. Support multiple queries for value in filters and query by expression
+### 12. Add module to config "OR groups"
 
 ## Usage 
 ### Configure categories for attributes

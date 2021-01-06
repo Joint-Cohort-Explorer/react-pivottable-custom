@@ -177,8 +177,7 @@ table.pvtTable tbody tr td:active {
 
 .pvtDropdownValue {
     padding: 2px 5px;
-    /* font-size: 12px; */
-    font-size: 16px;
+    font-size: 12px;
     text-align: left;
 }
 .pvtDropdownActiveValue {
@@ -246,7 +245,7 @@ table.pvtTable tbody tr td:active {
     color: #506784;
 }
 
-.pvtHorizList li {
+.pvtHorizList li, .modal-group-div li {
     display: inline-block;
 }
 .pvtVertList {
@@ -704,9 +703,10 @@ Dropdown Menu - Bootstrap
   }
 
   .modal-group-div{
-    border: 1px solid #a2b1c6;
+    border-bottom: 1px solid #a2b1c6;
+    border-top: 1px solid #a2b1c6;
     padding: 10px;
-    margin: 10px;
+    /* margin: 10px; */
     display: block;
   }
 
@@ -720,4 +720,14 @@ Dropdown Menu - Bootstrap
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
+    cursor: move;
+  }
+
+  .pvtSetting .card-header{
+      background: #f3f6fa;
+  }
+
+  .ungrouped-div{
+      max-height: 200px;
+      overflow-y: scroll;
   }

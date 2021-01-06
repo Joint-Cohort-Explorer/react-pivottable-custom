@@ -164,40 +164,8 @@ export default class App extends React.Component {
     render() {
         return (
             <div>
-                <div className="row text-center">
-                    <div className="col-md-3 col-md-offset-3">
-                        <p>Try it right now on a file...</p>
-                        <Dropzone
-                            onDrop={this.onDrop.bind(this)}
-                            accept="text/csv"
-                            className="dropzone"
-                            activeClassName="dropzoneActive"
-                            rejectClassName="dropzoneReject"
-                        >
-                            <p>
-                                Drop a CSV file here, or click to choose a file
-                                from your computer.
-                            </p>
-                        </Dropzone>
-                    </div>
-                    <div className="col-md-3 text-center">
-                        <p>...or paste some data:</p>
-                        <textarea
-                            value={this.state.textarea}
-                            onChange={this.onType.bind(this)}
-                            placeholder="Paste from a spreadsheet or CSV-like file"
-                        />
-                    </div>
-                </div>
-                <div className="row text-center">
-                    <p>
-                        <em>Note: the data never leaves your browser!</em>
-                    </p>
-                    <br />
-                </div>
+              
                 <div className="row">
-                    <h2 className="text-center">{this.state.filename}</h2>
-                    <br />
 
                     <PivotTableUISmartWrapper {...this.state.pivotState} />
                 </div>
