@@ -70,6 +70,7 @@ export default class ConfigModal extends React.Component{
         // todo: change values
         const values = this.props.values.slice(0); 
         const shown = values
+          .filter(x=>!this.props.attrToGroups[x] || this.props.attrToGroups[x] === this.state.selectGroup)
           .filter(this.matchesFilter.bind(this))
           .sort(this.props.sorter);
         
@@ -194,7 +195,8 @@ export default class ConfigModal extends React.Component{
 
       // todo: add one click delete
     makeDnDAttrs(groupName, onChangeAttr, groupValues){
-
+      const groupColor = this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined;
+      const attrStyle = groupColor && groupColor !== undefined ? {backgroundColor: groupColor}: {};
         return(<Sortable
           key = {groupName}
           options={{
@@ -212,7 +214,7 @@ export default class ConfigModal extends React.Component{
         key={value} 
       >
     
-        <span className="pvtAttr" style ={{backgroundColor: this.props.attrToGroupColor[value]}}>
+        <span className="pvtAttr" style ={attrStyle}>
             {value} 
             {/* <span className="pvtTriangle"> {' '} &times;</span> */}
         </span>
@@ -233,7 +235,6 @@ export default class ConfigModal extends React.Component{
         const groupValues = Object.keys(groupAttrObject);
         
         const onChangeAttr = order => {
-          console.log(order);
           const newValues = {};
           order.forEach(attr=>newValues[attr]= true);
           this.props.setGroupValue(groupName, newValues, "");

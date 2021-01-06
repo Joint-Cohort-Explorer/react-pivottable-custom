@@ -211,8 +211,8 @@ export class DraggableAttribute extends React.Component {
     visibility: this.state.hover ? 'visible': 'hidden'
   };
 
-  const attrSpanStyle =  this.props.attrToGroupColor &&  this.props.attrToGroupColor[this.props.name]?{
-    backgroundColor: this.props.attrToGroupColor[this.props.name]
+  const attrSpanStyle =  this.props.attrColor && this.props.attrColor !== ""?{
+    backgroundColor:  this.props.attrColor
   }: {};
 
     return (
@@ -418,7 +418,7 @@ export class CategoryCard extends React.Component {
                               removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
                               rowHeight = {this.props.rowHeight}
-                              attrToGroupColor = {this.props.attrToGroupColor}
+                              attrColor = {this.props.attrToGroupColor[x] || ""}
                             />
                           )):(
                           this.state.open?<span>No Attributes Here.</span>:
@@ -692,11 +692,11 @@ class PivotTableUI extends React.PureComponent {
     if(!this.props.attrGroups[group] || (!newAttrGroupColors[group])){
       newAttrGroupColors[group] = origColor && origColor !== undefined? origColor: colors[nums % colors.length];
     }
-    const curColor =  newAttrGroupColors[group];
-    const newAttrToGroupColor = Object.assign({}, this.props.attrToGroupColor);
-    for (const [key, value] of Object.entries(valueObject)){
-      newAttrToGroupColor[key] = curColor;
-    }
+    // const curColor =  newAttrGroupColors[group];
+    const newAttrToGroup = Object.assign({}, this.props.attrToGroups);
+    Object.keys(valueObject).forEach(key=>{
+      newAttrToGroup[key] = group;
+    })
 
     if(origGroup && origGroup !== "" 
       && this.props.attrGroups 
@@ -711,8 +711,8 @@ class PivotTableUI extends React.PureComponent {
         attrGroups:{
           $set: newAttrGroups
         },
-        attrToGroupColor:{
-          $set: newAttrToGroupColor
+        attrToGroups: {
+          $set: newAttrToGroup
         },
         attrGroupsColor: {
           $set:  newAttrGroupColors
@@ -726,8 +726,8 @@ class PivotTableUI extends React.PureComponent {
             $set: valueObject
           }
         },
-        attrToGroupColor:{
-          $set: newAttrToGroupColor
+        attrToGroups: {
+          $set: newAttrToGroup
         },
         attrGroupsColor: {
           $set:  newAttrGroupColors
@@ -811,15 +811,21 @@ class PivotTableUI extends React.PureComponent {
           prev.push.apply(prev, getAllAttributes(cur))
           return prev;
     },[]);
-      const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
-      const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
-      // const newAttrList = attrList.slice(0);
-      if (unclassfiedAttrs.length > 0){
-        attrList.push({
-          name: this.props.unclassifiedAttrName,
-          attributes: unclassfiedAttrs
-        })
-      }
+    const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
+    const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
+    // const newAttrList = attrList.slice(0);
+    if (unclassfiedAttrs.length > 0){
+      attrList.push({
+        name: this.props.unclassifiedAttrName,
+        attributes: unclassfiedAttrs
+      })
+    }
+    // attrGroupsColor: {},
+    // attrToGroups: {},
+    const attrToGroupColor  = {};
+    for (const [attr, group] of Object.entries(this.props.attrToGroups)){
+      attrToGroupColor[attr] = this.props.attrGroupsColor[group];
+    }
 
 return (<td className={classes + " pvtCategoryArea"}>
   <div className="pvtCategoryContainer">
@@ -848,7 +854,7 @@ return (<td className={classes + " pvtCategoryArea"}>
         removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
         zIndices = {this.state.zIndices}
         maxZIndex = {this.state.maxZIndex} 
-        attrToGroupColor = {this.props.attrToGroupColor}
+        attrToGroupColor = {attrToGroupColor}
     />
       )
     })
@@ -889,7 +895,7 @@ return (<td className={classes + " pvtCategoryArea"}>
             moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
             removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
             zIndex={this.state.zIndices[x] || this.state.maxZIndex}
-            attrToGroupColor = {this.props.attrToGroupColor}
+            attrColor = {this.props.attrToGroups[x]? this.props.attrGroupsColor[this.props.attrToGroups[x]] || "": ""}
           />
         ))}
       </Sortable>
@@ -1133,7 +1139,9 @@ return (<td className={classes + " pvtCategoryArea"}>
         handleClose = {this.closeConfigModal.bind(this)} 
         zIndex={this.state.maxZIndex + 1}
         groups = {this.props.attrGroups}
-        attrToGroupColor = {this.props.attrToGroupColor}
+        // attrToGroupColor = {this.props.attrToGroupColor}
+        attrToGroups= {this.props.attrToGroups}
+        attrGroupsColor = {this.props.attrGroupsColor}
         setGroupValue = {this.setGroupValue.bind(this)}
         values = {Object.keys(this.state.attrValues)
         .filter(
