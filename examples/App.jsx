@@ -1,5 +1,5 @@
 import React from 'react';
-import tips from './test_data_1';
+import tips from './test-data-efi';
 import {sortAs} from '../src/Utilities';
 import TableRenderers from '../src/TableRenderers';
 import createPlotlyComponent from 'react-plotly.js/factory';
@@ -39,57 +39,57 @@ class PivotTableUISmartWrapper extends React.PureComponent {
 
 export default class App extends React.Component {
     componentWillMount() {
-        const attributes = ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'];
-        //  const attrLabel = attributes.map(x=>{return {[x]:x}});
-        const attrLabel = {};
-        attributes.forEach(attr=>{
-            attrLabel[attr] = attr;
-        });
+        // const attributes = ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'];
+        // //  const attrLabel = attributes.map(x=>{return {[x]:x}});
+        // const attrLabel = {};
+        // attributes.forEach(attr=>{
+        //     attrLabel[attr] = attr;
+        // });
         this.setState({
             mode: 'demo',
             filename: 'Sample Dataset: Tips',
             pivotState: {
                 data: tips,
                 // Added attributes
-                attrLabel: attrLabel,
+                // attrLabel: attrLabel,
                 attrClassified: true,
                 attrCategory:[
-                    {
-                        name: "Basic information",
-                        attributes: attributes,
-                        // attributes: ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'],
-                        subcategory: [
-                           {
-                            name: "Web",
-                            attributes: [ 'Website'],
-                            subcategory: [
-                                {
-                                    name: "Vendor",
-                                    attributes: ['Vendor_Formal_Name', 'Vendor_DBA']
-                                }
-                            ]
-                           },
-                           {
-                               name: "Job",
-                               attributes: ['Job_Exp1_Name_of_Client', 'Job_Exp1_Value_of_Contract', 'Job_Exp1_Percent_Self_Performed', 'DATEOFJOB1', 'EXPERIENCE1', 'Job_Exp2_Name_of_Client', 'Job_Exp2_Value_of_Contract', 'Job_Exp2_Percent_Self_Performed', 'DATEOFJOB2', 'EXPERIENCE2', 'Job_Exp3_Name_of_Client', 'Job_Exp3_Value_of_Contract', 'Job_Exp3_Percent_Self_Performed', 'DATEOFJOB3', 'EXPERIENCE3', 'Job_Exp4_Name_of_Client', 'Job_Exp4_Value_of_Contract', 'Job_Exp4_Percent_Self_Performed']
+                    // {
+                    //     name: "Basic information",
+                    //     attributes: attributes,
+                    //     // attributes: ['Ethnicity', 'Date_Of_Establishment', 'Aggregate_Bonding_Limit', 'Signatory_To_Union_Contracts', 'Business_Description', 'Goods_Materials_Suplier', 'Types_of_Construction_Projects',  'DATEOFJOB4', 'EXPERIENCE4'],
+                    //     subcategory: [
+                    //        {
+                    //         name: "Web",
+                    //         attributes: [ 'Website'],
+                    //         subcategory: [
+                    //             {
+                    //                 name: "Vendor",
+                    //                 attributes: ['Vendor_Formal_Name', 'Vendor_DBA']
+                    //             }
+                    //         ]
+                    //        },
+                    //        {
+                    //            name: "Job",
+                    //            attributes: ['Job_Exp1_Name_of_Client', 'Job_Exp1_Value_of_Contract', 'Job_Exp1_Percent_Self_Performed', 'DATEOFJOB1', 'EXPERIENCE1', 'Job_Exp2_Name_of_Client', 'Job_Exp2_Value_of_Contract', 'Job_Exp2_Percent_Self_Performed', 'DATEOFJOB2', 'EXPERIENCE2', 'Job_Exp3_Name_of_Client', 'Job_Exp3_Value_of_Contract', 'Job_Exp3_Percent_Self_Performed', 'DATEOFJOB3', 'EXPERIENCE3', 'Job_Exp4_Name_of_Client', 'Job_Exp4_Value_of_Contract', 'Job_Exp4_Percent_Self_Performed']
 
-                           }
-                        ]
-                    },
-                    {
-                        name: "Contact",
-                        attributes: ['Contact_Name', 'telephone', 'fax', 'Email']
-                    },
-                    {
-                        name: "Cert",
-                        attributes: ['certification', 'Cert_Renewal_Date']
+                    //        }
+                    //     ]
+                    // },
+                    // {
+                    //     name: "Contact",
+                    //     attributes: ['Contact_Name', 'telephone', 'fax', 'Email']
+                    // },
+                    // {
+                    //     name: "Cert",
+                    //     attributes: ['certification', 'Cert_Renewal_Date']
                         
-                    },
+                    // },
                     
-                    {
-                        name: "Address",
-                        attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
-                    },
+                    // {
+                    //     name: "Address",
+                    //     attributes: ['Address1', 'Address2', 'City', 'State', 'ZIP']
+                    // },
                 ],
                 unclassifiedAttrName: "Others",
                 attrOrder: [],

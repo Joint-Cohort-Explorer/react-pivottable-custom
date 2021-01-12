@@ -731,3 +731,7 @@ Dropdown Menu - Bootstrap
       max-height: 200px;
       overflow-y: scroll;
   }
+
+  .config-card{
+      padding: 10px;
+  }

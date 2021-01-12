@@ -90,7 +90,7 @@ export default class ConfigModal extends React.Component{
     //     }
         return (
 
-            <div>
+            <div className='config-card'>
                 <h3>Set a Group</h3>
     
               {showMenu || <p>(too many values to show)</p>}
@@ -200,7 +200,7 @@ export default class ConfigModal extends React.Component{
         return(<Sortable
           key = {groupName}
           options={{
-            group: 'shared',
+            group: 'group-attrs',
             ghostClass: 'pvtPlaceholder',
             filter: '.pvtFilterBox',
             preventOnFilter: false,
