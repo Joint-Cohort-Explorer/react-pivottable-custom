@@ -678,7 +678,7 @@ class PivotTableUI extends React.PureComponent {
     this.setState({unusedAttrOrder: newAttrOrder});
   }
 
-  setGroupValue(group, valueObject, origGroup){
+  setGroupValue(group, valueObject, origGroup, groupColor){
     const nums = this.props.attrGroups? Object.keys(this.props.attrGroups).length : 0;
     if(!group || group === ""){
       group = `group-${nums + 1}`;
@@ -690,10 +690,16 @@ class PivotTableUI extends React.PureComponent {
     if (origColor && origColor !== undefined){
       delete newAttrGroupColors[origGroup];
     }
+    // console.log(origColor,groupColor);
     if(!this.props.attrGroups[group] || (!newAttrGroupColors[group])){
-      newAttrGroupColors[group] = origColor && origColor !== undefined? origColor: colors[nums % colors.length];
+      newAttrGroupColors[group] = origColor && origColor !== undefined? origColor: (groupColor || colors[nums % colors.length]);
     }
-    // const curColor =  newAttrGroupColors[group];
+
+    // change colors
+    if(origColor && groupColor && origColor !== groupColor){
+      newAttrGroupColors[group] = groupColor;
+    }
+
     const newAttrToGroup = Object.assign({}, this.props.attrToGroups);
     Object.keys(valueObject).forEach(key=>{
       newAttrToGroup[key] = group;

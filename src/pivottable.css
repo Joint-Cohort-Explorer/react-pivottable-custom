@@ -729,9 +729,50 @@ Dropdown Menu - Bootstrap
 
   .ungrouped-div{
       max-height: 200px;
-      overflow-y: scroll;
+      overflow-y: auto;
+  }
+
+  .modal-group-div.ungrouped-div{
+      background-color: rgb(226 226 226 / 15%);
   }
 
   .config-card{
       padding: 10px;
+  }
+
+  .label{
+      font-size: 14px;
+      width: 120px;
+      display: inline-block;
+      text-align: center;
+      margin: 2px 2px;
+      /* min-width: 100px; */
+  }
+
+
+  /* color picker */
+
+  .picker {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .swatch {
+    width: 26px;
+    height: 26px;
+    /* border-radius: 8px; */
+    border: 1px solid #a2b1c6;
+    /* box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(0, 0, 0, 0.1); */
+    cursor: pointer;
+    display: inline-block;
+    margin: 0em;
+    vertical-align: middle;
+    
+   
+  }
+  
+ 
+  
+  .form-row{
+      margin: 10px 5px 10px 5px;
   }

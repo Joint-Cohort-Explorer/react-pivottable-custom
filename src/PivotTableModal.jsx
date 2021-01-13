@@ -1,7 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Sortable from 'react-sortablejs';
+import { HexColorPicker } from "react-colorful";
+import "react-colorful/dist/index.css";
 // import Draggable from 'react-draggable';
+const colors = [
+  "#ECF5FF",
+  "#D2E9FF",
+  "#C4E1FF",
+  "#ACD6FF",
+  "#97CBFF",
+  "84C1FF",
+  "ECFFFF",
+]
 
 function getUngroupedValues(allValues, groups){
   const groupedValues = [];
@@ -22,10 +33,13 @@ export default class ConfigModal extends React.Component{
             show: false,
             filterText: '', 
             selectGroup: '',
-            alterGroupName: '',
+            alterGroupName: '', 
+            attrColor: '',
+            showColorPicker: false,
             selectValues: {},
             errors: {},
             ungroupedValues: [],
+            showEditAttr: false,
         };
     }
 
@@ -55,8 +69,10 @@ export default class ConfigModal extends React.Component{
           // console.log('in modal', this.state);
           const origName = this.state.selectGroup;
           const groupName = this.state.alterGroupName;
+          const groupColor = this.state.groupColor;
           const newValues = Object.assign({}, this.state.selectValues);
-          this.props.setGroupValue(groupName, newValues, origName);
+        
+          this.props.setGroupValue(groupName, newValues, origName, groupColor);
         //   this.setState({open: false, selectGroup: "", alterGroupName: "", selectValues: {}});
             this.closeEditMode();
       }
@@ -64,10 +80,7 @@ export default class ConfigModal extends React.Component{
 
 
     getFilterBox() {
-        const showMenu = true;
-        //   this.props.values.length < this.props.menuLimit;
-        // console.log(this.props.values.slice(0));
-        // todo: change values
+
         const values = this.props.values.slice(0); 
         const shown = values
           .filter(x=>!this.props.attrToGroups[x] || this.props.attrToGroups[x] === this.state.selectGroup)
@@ -79,27 +92,23 @@ export default class ConfigModal extends React.Component{
        const divStyle = {
           display: 'block',
           cursor: 'initial',
-          width: '100%'
-        //   zIndex: this.props.zIndex,
+          // right: '120px'
+          // width: '100%'
+          zIndex: this.props.zIndex || 1000,
+
         };
-    //     if(this.props.rowHeight) {
-    //       divStyle.top = this.props.rowHeight;
-    //     }
-    //     if(this.props.searchDropDown) {// modified for search filter box
-    //       divStyle.right = '40px' 
-    //     }
+
         return (
 
             <div className='config-card'>
-                <h3>Set a Group</h3>
-    
-              {showMenu || <p>(too many values to show)</p>}
-    
-              {showMenu && (
-                <div style={divStyle}>
-                     <input
+             
+
+
+                <div className = 'form-row'>
+                 <span className = 'label'>Group Name </span>
+                  <input
                         type="text"
-                        style={{width: "80%", minHeight: "26px"}}
+                        style={{minWidth: "40%", height: "26px", border:"1px solid #a2b1c6"}}
                         placeholder="Group Name"
                         // className="pvtSearch"
                         value={this.state.alterGroupName}
@@ -109,7 +118,80 @@ export default class ConfigModal extends React.Component{
                         })
                         }
                     />
+                </div>
 
+                     
+              <div className="form-row"> 
+                <span className='label'>Group Color  </span>
+                <div
+                  className="swatch"
+                  style = {{backgroundColor: this.state.groupColor}}
+                  onClick = {()=>this.setState({showColorPicker: !this.state.showColorPicker})}
+
+                />
+                {
+                  this.state.showColorPicker && (<div> 
+                    <HexColorPicker color={this.state.groupColor} onChange={color=>this.setState({groupColor: color})}/>
+                  </div>)
+                }
+              
+                        
+              </div>
+
+              <div className="Form-row">
+                <span className="label">Group Attributes</span>
+                <div className="modal-group-div">
+                {this.makeDnDAttrs(this.state.alterGroupName, order=>this.setState({
+                  selectValues: order.reduce((res, value)=>{
+                    res[value] = true;
+                    return res;
+                  }, {})
+                }), 
+                Object.keys(this.state.selectValues),
+                this.state.groupColor)
+                }
+                </div>
+              </div>
+
+              <div className="form-row"> 
+
+              <span>
+                <button  role="button"
+                  className="pvtButton"
+                  onClick = {()=>this.setState({showEditAttr: !this.state.showEditAttr})}  
+                >Select Attributes
+                
+                <span
+                className="pvtTriangle"
+                // onClick={this.toggleFilterBox.bind(this)}
+              >
+                {' '}
+                ▾
+             </span>
+
+                </button>
+
+                <button role="button"
+                    className="pvtButton"
+                    onClick={()=>this.setState({open: false, selectGroup: "", alterGroupName: "", selectValues: {}})}
+                    >
+                      Cancel
+                  </button>
+                  <button role="button"
+                    className="pvtButton"
+                    onClick={()=>this.saveGroup()}
+                >
+                      Save
+                  </button>
+
+              </span>
+              {this.state.showEditAttr &&  (
+                <div style={divStyle} className="pvtFilterBox">
+                     
+                     <a onClick={() => this.setState({showEditAttr: false})} className="pvtCloseX">
+                      ×
+                    </a>
+                  <h4> Ungrouped Attributes</h4>
                   <input
                     type="text"
                     style={{width: "80%", minHeight: "26px"}}
@@ -151,12 +233,11 @@ export default class ConfigModal extends React.Component{
                   >
                     Deselect {values.length === shown.length ? 'All' : shown.length}
                   </button>
-                </div>
-              )}
-    
-    
-              {showMenu && (
-                <div className="pvtCheckContainer">
+
+
+
+
+                  <div className="pvtCheckContainer">
                   {shown.map(x => (
                     <p
                       key={x}
@@ -172,30 +253,23 @@ export default class ConfigModal extends React.Component{
                     </p>
                   ))}
                 </div>
+                </div>
               )}
-
-              <div>
-                  <button role="button"
-                    className="pvtButton"
-                    onClick={()=>this.setState({open: false, selectGroup: "", alterGroupName: "", selectValues: {}})}
-                    >
-                      Cancel
-                  </button>
-                  <button role="button"
-                    className="pvtButton"
-                    onClick={()=>this.saveGroup()}
-                >
-                      Save
-                  </button>
               </div>
+    
+    
+          
+
             </div>
         );
       }
     
 
       // todo: add one click delete
-    makeDnDAttrs(groupName, onChangeAttr, groupValues){
-      const groupColor = this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined;
+    makeDnDAttrs(groupName, onChangeAttr, groupValues, groupColor){
+      // console.log(this.props.attrGroupsColor);
+      // const groupColor = this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined;
+
       const attrStyle = groupColor && groupColor !== undefined ? {backgroundColor: groupColor}: {};
         return(<Sortable
           key = {groupName}
@@ -247,13 +321,17 @@ export default class ConfigModal extends React.Component{
                   className="pvtButton"
                   style={{float: "right"}}
                   onClick={()=>{
-                  this.setState({open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject});
+                  this.setState({open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject, 
+                    groupColor: this.props.attrGroupsColor[groupName],
+                    showEditAttr: false,
+                    showColorPicker: false
+                  });
               }}>Edit Group </button>
             </div>
          
           
 
-           {this.makeDnDAttrs(groupName, onChangeAttr, groupValues)}
+           {this.makeDnDAttrs(groupName, onChangeAttr, groupValues,  this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined)}
             {/* {groupValues.map(value=>(<span key={value} className="modal-attr-span">{value}</span>))} */}
            
         </div>)
@@ -276,22 +354,31 @@ export default class ConfigModal extends React.Component{
     renderGroups(){
 
         const onChangeUngrouped = order=>this.setState({ungroupedValues:order});
-
+        const nums = this.props.groups ? Object.keys(this.props.groups).length : 0;
         return(<div>
             <div className="modal-group-div ungrouped-div">
              <span style={{fontSize: "14px"}}>Ungrouped Attributes</span>
               {this.makeDnDAttrs('Ungrouped Attrs', onChangeUngrouped, this.state.ungroupedValues)}
             </div>
-            {Object.keys(this.props.groups).map(group=>{
-                return this.renderGroupDetails(group, this.props.groups[group])
-            })}
+           {
+             this.props.groups && Object.keys(this.props.groups).length > 0 && ( <div className="ungrouped-div">
+             {Object.keys(this.props.groups).map(group=>{
+                 return this.renderGroupDetails(group, this.props.groups[group])
+             })}
+           </div>)
+           }
             <button 
                  className="pvtButton"
                 //  style={{float: "right"}}
                 onClick={()=>{
                 const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
                 const defaultName = `group-${groupNum + 1}`
-                this.setState({open: true, selectGroup: "", alterGroupName: defaultName, selectValues:{}})
+                this.setState({open: true, 
+                  selectGroup: "", alterGroupName: defaultName, selectValues:{}, 
+              groupColor: colors[nums % colors.length],
+              showEditAttr: false,
+              showColorPicker: false
+            })
             }}>Add New Group</button>
         </div>)
     }
@@ -305,7 +392,7 @@ export default class ConfigModal extends React.Component{
             <div className="card-title"
                 style = {{display: "inline-block", minWidth:"40%"}}
                 onClick={()=>this.setState({show: !this.state.show})}>
-              Set OR Groups
+              Set OR Groups {this.state.open? ": Edit A Group" : ""}
             </div>
           </div>
           {this.state.show && (  <div className="card-body"> {/* className="modal-content" */}
