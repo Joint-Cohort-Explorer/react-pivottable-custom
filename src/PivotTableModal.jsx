@@ -4,6 +4,7 @@ import Sortable from 'react-sortablejs';
 import { HexColorPicker } from "react-colorful";
 import "react-colorful/dist/index.css";
 // import Draggable from 'react-draggable';
+
 const colors = [
   "#ECF5FF",
   "#D2E9FF",
@@ -23,6 +24,84 @@ function getUngroupedValues(allValues, groups){
   return ungroupedValues;
 }
 
+function makeDnDAttrs(groupName, onChangeAttr, groupValues, groupColor){
+  // console.log(this.props.attrGroupsColor);
+  // const groupColor = this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined;
+
+  const attrStyle = groupColor || {};
+    return(<Sortable
+      key = {groupName}
+      options={{
+        group: 'group-attrs',
+        ghostClass: 'pvtPlaceholder',
+        filter: '.pvtFilterBox',
+        preventOnFilter: false,
+      }}
+    tag="div"
+    onChange={onChangeAttr}
+    // onChange={onChangeAttr(key)}
+    >
+  {groupValues.map(value=>(<li 
+    data-id = {value} 
+    key={value} 
+  >
+
+    <span className="pvtAttr" style ={attrStyle}>
+        {value} 
+        {/* <span className="pvtTriangle"> {' '} &times;</span> */}
+    </span>
+    
+
+  </li>))}
+</Sortable>)
+}
+
+export class UngroupedAttrs extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      ungroupedValues: [],
+    }
+  }
+
+  componentWillReceiveProps(nextProps){
+    const allValues =  nextProps.values.slice(0);
+    const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
+    this.setState({ungroupedValues: ungroupedValues});
+    // if(this.props.groups !== nextProps.groups && this.props.values !== nextProps.values){
+      
+    //   const allValues =  nextProps.values.slice(0);
+    //   const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
+    //   this.setState({ungroupedValues: ungroupedValues});
+    // }
+  }
+
+  render(){
+    const onChangeUngrouped = order=>this.setState({ungroupedValues:order});
+    return(<div className="pvtCategoryContainer">
+    <div className="pvtCateogryCard">
+    <div className="card-header"
+        onClick = {this.props.toggleConfig}
+    >
+      <div className="card-title"
+          style = {{display: "inline-block", minWidth:"40%"}}
+         >
+        Set OR Groups 
+      </div>
+    </div>
+
+      <div className="card-body">
+    
+       {this.props.show && (<div className="modal-group-div ungrouped-div">
+             <span style={{fontSize: "14px"}}>Ungrouped Attributes</span>
+            {makeDnDAttrs('Ungrouped Attrs', onChangeUngrouped, this.state.ungroupedValues)}
+      </div>)}
+      </div>
+
+  </div>
+    </div>)
+  }
+}
 export default class ConfigModal extends React.Component{
     constructor(props){
         super(props);
@@ -34,7 +113,8 @@ export default class ConfigModal extends React.Component{
             filterText: '', 
             selectGroup: '',
             alterGroupName: '', 
-            attrColor: '',
+            groupStyle: {},
+            editColorMode: 0,
             showColorPicker: false,
             selectValues: {},
             errors: {},
@@ -69,10 +149,11 @@ export default class ConfigModal extends React.Component{
           // console.log('in modal', this.state);
           const origName = this.state.selectGroup;
           const groupName = this.state.alterGroupName;
-          const groupColor = this.state.groupColor;
+          // const groupColor = this.state.groupColor;
+          const groupStyle = Object.assign({}, this.state.groupStyle);
           const newValues = Object.assign({}, this.state.selectValues);
         
-          this.props.setGroupValue(groupName, newValues, origName, groupColor);
+          this.props.setGroupValue(groupName, newValues, origName, groupStyle);
         //   this.setState({open: false, selectGroup: "", alterGroupName: "", selectValues: {}});
             this.closeEditMode();
       }
@@ -122,23 +203,57 @@ export default class ConfigModal extends React.Component{
 
                      
               <div className="form-row"> 
-                <span className='label'>Group Color  </span>
+                <span className='label'>Background Color  </span>
                 <div
                   className="swatch"
-                  style = {{backgroundColor: this.state.groupColor}}
-                  onClick = {()=>this.setState({showColorPicker: !this.state.showColorPicker})}
+                  style = {{backgroundColor: this.state.groupStyle.backgroundColor}}
+                  onClick = {()=>{
+                    if(this.state.editColorMode === 1){
+                      this.setState({showColorPicker: !this.state.showColorPicker})
+                    }else{
+                      this.setState({showColorPicker: true,
+                        editColorMode: 1,
+                        })
+                    }
+                  }}
 
                 />
+
+              <span className='label'>Font Color  </span>
+                <div
+                  className="swatch"
+                  style = {{backgroundColor: this.state.groupStyle.color}}
+                  onClick = {()=>{
+                    if(this.state.editColorMode === 2){
+                      this.setState({showColorPicker: !this.state.showColorPicker})
+                    }else{
+                      this.setState({showColorPicker: true,
+                        editColorMode: 2,
+                        })
+                    }
+                  }}
+
+                  />
                 {
-                  this.state.showColorPicker && (<div> 
-                    <HexColorPicker color={this.state.groupColor} onChange={color=>this.setState({groupColor: color})}/>
+                  this.state.showColorPicker && (<div className="color-picker"> 
+                   <span className="label">{this.state.editColorMode === 1 ? "Choose a background color: " : "Choose a font color: "}</span>
+                   <HexColorPicker color={this.state.editColorMode === 1? this.state.groupStyle.backgroundColor : this.state.groupStyle.color} 
+                      onChange={color=>{
+                        const newStyle = Object.assign({}, this.state.groupStyle);
+                        if(this.state.editColorMode===1){
+                          newStyle.backgroundColor = color;
+                        } else {
+                          newStyle.color = color;
+                        }
+                        this.setState({groupStyle: newStyle});
+                      }}/>
                   </div>)
                 }
               
                         
               </div>
 
-              <div className="Form-row">
+              <div className="form-row">
                 <span className="label">Group Attributes</span>
                 <div className="modal-group-div">
                 {this.makeDnDAttrs(this.state.alterGroupName, order=>this.setState({
@@ -148,7 +263,7 @@ export default class ConfigModal extends React.Component{
                   }, {})
                 }), 
                 Object.keys(this.state.selectValues),
-                this.state.groupColor)
+                this.state.groupStyle)
                 }
                 </div>
               </div>
@@ -178,7 +293,7 @@ export default class ConfigModal extends React.Component{
                       Cancel
                   </button>
                   <button role="button"
-                    className="pvtButton"
+                    className="pvtButton primary"
                     onClick={()=>this.saveGroup()}
                 >
                       Save
@@ -266,11 +381,11 @@ export default class ConfigModal extends React.Component{
     
 
       // todo: add one click delete
-    makeDnDAttrs(groupName, onChangeAttr, groupValues, groupColor){
+    makeDnDAttrs(groupName, onChangeAttr, groupValues, groupStyle){
       // console.log(this.props.attrGroupsColor);
       // const groupColor = this.props.attrGroupsColor ? this.props.attrGroupsColor[groupName]: undefined;
 
-      const attrStyle = groupColor && groupColor !== undefined ? {backgroundColor: groupColor}: {};
+      const attrStyle = groupStyle || {};
         return(<Sortable
           key = {groupName}
           options={{
@@ -316,17 +431,26 @@ export default class ConfigModal extends React.Component{
         return(<div key= {groupName} className="modal-group-div">
 
             <div >
-            <span style={{fontSize: "14px"}}>{groupName}</span>
-              <button 
-                  className="pvtButton"
+            <span style={{fontSize: "14px", verticalAlign: "middle"}}>{groupName}</span>
+            <button 
+                  className="pvtButton primary"
                   style={{float: "right"}}
                   onClick={()=>{
-                  this.setState({open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject, 
-                    groupColor: this.props.attrGroupsColor[groupName],
+                  this.setState({
+                    open: true, selectGroup: groupName, alterGroupName: groupName, selectValues: groupAttrObject, 
+                    groupStyle: this.props.attrGroupsColor[groupName],
                     showEditAttr: false,
                     showColorPicker: false
                   });
-              }}>Edit Group </button>
+              }}>Edit</button>
+              
+            <button 
+                  className="pvtButton"
+                  style={{float: "right"}}
+                  onClick={()=>this.props.deleteGroupValue(groupName)}>Delete</button>
+    
+
+         
             </div>
          
           
@@ -338,64 +462,94 @@ export default class ConfigModal extends React.Component{
     }
 
 
-  
-    componentWillReceiveProps(nextProps){
-      const allValues =  nextProps.values.slice(0);
-      const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
-      this.setState({ungroupedValues: ungroupedValues});
-      // if(this.props.groups !== nextProps.groups && this.props.values !== nextProps.values){
-        
-      //   const allValues =  nextProps.values.slice(0);
-      //   const ungroupedValues = getUngroupedValues(allValues, nextProps.groups);
-      //   this.setState({ungroupedValues: ungroupedValues});
-      // }
-    }
+
 
     renderGroups(){
 
-        const onChangeUngrouped = order=>this.setState({ungroupedValues:order});
-        const nums = this.props.groups ? Object.keys(this.props.groups).length : 0;
+        // const onChangeUngrouped = order=>this.setState({ungroupedValues:order});
+     
         return(<div>
-            <div className="modal-group-div ungrouped-div">
+            {/* <div className="modal-group-div ungrouped-div">
              <span style={{fontSize: "14px"}}>Ungrouped Attributes</span>
               {this.makeDnDAttrs('Ungrouped Attrs', onChangeUngrouped, this.state.ungroupedValues)}
-            </div>
-           {
-             this.props.groups && Object.keys(this.props.groups).length > 0 && ( <div className="ungrouped-div">
-             {Object.keys(this.props.groups).map(group=>{
-                 return this.renderGroupDetails(group, this.props.groups[group])
-             })}
-           </div>)
-           }
-            <button 
-                 className="pvtButton"
+            </div> */}
+              {
+                this.props.groups && Object.keys(this.props.groups).length > 0 && ( <div className="ungrouped-div">
+                {Object.keys(this.props.groups).map(group=>{
+                    return this.renderGroupDetails(group, this.props.groups[group])
+                })}
+              </div>)
+              }
+            {/* <button 
+                 className="pvtSettingButton"
                 //  style={{float: "right"}}
                 onClick={()=>{
                 const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
                 const defaultName = `group-${groupNum + 1}`
                 this.setState({open: true, 
-                  selectGroup: "", alterGroupName: defaultName, selectValues:{}, 
-              groupColor: colors[nums % colors.length],
-              showEditAttr: false,
-              showColorPicker: false
+                  selectGroup: "", 
+                  alterGroupName: defaultName, selectValues:{}, 
+                  groupStyle: {
+                    backgroundColor:  colors[nums % colors.length],
+                    color: "#506784"
+                  },
+                showEditAttr: false,
+                showColorPicker: false
             })
-            }}>Add New Group</button>
+            }}>Add New Group</button> */}
         </div>)
     }
 
 
     render(){
       // className="modal" style = {{zIndex: this.props.zIndex || 1000}}
+      const nums = this.props.groups ? Object.keys(this.props.groups).length : 0;
         return (<div className="pvtCategoryContainer pvtSetting">
           <div className="pvtCateogryCard">
-          <div className="card-header">
+          <div className="card-header"
+             
+          >
             <div className="card-title"
-                style = {{display: "inline-block", minWidth:"40%"}}
-                onClick={()=>this.setState({show: !this.state.show})}>
-              Set OR Groups {this.state.open? ": Edit A Group" : ""}
+                style = {{display: "inline-block", minWidth:"40%", minHeight:"10px"}}
+                onClick={this.props.toggleConfig}
+            >
+
+         
+
+              {/* Set OR Groups {this.state.open? ": Edit A Group" : ""} */}
             </div>
+
+            {this.props.show && (<div
+            // className="dropdown dropleft"
+              style={{float: "right", display: "inline-block"}}
+            >
+               {this.state.open ? (<button role="button"
+                    className="pvtButton"
+                    onClick={()=>this.setState({open: false, selectGroup: "", alterGroupName: "", selectValues: {}})}
+                    >
+                      Cancel
+                  </button>)
+              :( <button 
+                    className="pvtSettingButton"
+                    onClick={()=>{
+                    this.props.handleOpen();
+                    const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
+                    const defaultName = `group-${groupNum + 1}`
+                    this.setState({open: true, 
+                      selectGroup: "", 
+                      alterGroupName: defaultName, selectValues:{}, 
+                      groupStyle: {
+                        backgroundColor:  colors[nums % colors.length],
+                        color: "#506784"
+                      },
+                    showEditAttr: false,
+                    showColorPicker: false
+              })
+         }}>Add New Group</button>)}
+
+            </div>)}
           </div>
-          {this.state.show && (  <div className="card-body"> {/* className="modal-content" */}
+          {this.props.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
                 {this.state.open && this.getFilterBox()}
             </div>)}

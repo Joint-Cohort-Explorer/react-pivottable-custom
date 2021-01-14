@@ -620,10 +620,14 @@ class PivotData {
         }
       }
 
-      if(inFilteredValue === groupedAttrsNum){
+      if(groupedAttrsNum > 0 && inFilteredValue === groupedAttrsNum){
         return false;
       }
     }
+
+
+    // console.log('here')
+  
 
     for (const k in this.props.valueFilter) {
       if (k in groupedValue){
@@ -633,6 +637,8 @@ class PivotData {
         return false;
       }
     }
+
+   
     return true;
   }
 
@@ -869,7 +875,7 @@ PivotData.propTypes = {
   attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
   attrGroups: PropTypes.objectOf(PropTypes.objectOf(PropTypes.bool)),
-  attrGroupsColor: PropTypes.objectOf(PropTypes.string),
+  attrGroupsColor: PropTypes.objectOf(PropTypes.object),
   attrToGroups: PropTypes.objectOf(PropTypes.string),
   // unusedAttrOrder: PropTypes.objectOf(PropTypes.array),
   attrLabel: PropTypes.objectOf(PropTypes.string),

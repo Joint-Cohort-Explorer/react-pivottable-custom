@@ -473,8 +473,8 @@ table.pvtTable tbody tr td:active {
     word-wrap: break-word;
     background-color: #fff;
     background-clip: border-box;
-    border: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.25rem;
+    /* border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem; */
 }
 /* Dropdown menus */
 .dropdown-submenu {
@@ -558,6 +558,7 @@ table.pvtTable tbody tr td:active {
     font-weight: 800;
     background: #b2cfebcc; /**62A7EC**/
     color: #3f4f75;
+
 }
 
 .card-title{
@@ -723,13 +724,23 @@ Dropdown Menu - Bootstrap
     cursor: move;
   }
 
-  .pvtSetting .card-header{
+  .pvtSetting-left  .card-header,  .pvtSetting-right .card-header{
       background: #f3f6fa;
+      border-bottom: 1px solid #a2b1c6;
+      height: 28px;
+  }
+
+  .pvtSetting-left .card-title, .pvtSetting-right .card-title{
+      color: #666767de;
   }
 
   .ungrouped-div{
+      border-top: 0px;
+      border-bottom: 0px;
+      border-right: 1px solid #a2b1c6;
       max-height: 200px;
       overflow-y: auto;
+     
   }
 
   .modal-group-div.ungrouped-div{
@@ -742,10 +753,11 @@ Dropdown Menu - Bootstrap
 
   .label{
       font-size: 14px;
-      width: 120px;
+      min-width: 200px;
       display: inline-block;
       text-align: center;
       margin: 2px 2px;
+      padding: 5px;
       /* min-width: 100px; */
   }
 
@@ -772,7 +784,51 @@ Dropdown Menu - Bootstrap
   }
   
  
-  
   .form-row{
       margin: 10px 5px 10px 5px;
   }
+
+  .color-picker {
+      background-color: rgb(243 246 250);
+      margin: 5px;
+      padding: 10px;
+  }
+
+  .color-picker > .react-colorful {
+      margin: 20px;
+    /* margin: 5px auto;  */
+    /* padding: 20px 5px; */
+  }
+
+  .pvtSetting-left, .pvtSetting-right{
+      padding: 0px;
+ 
+      /* border-radius: 0px; */
+  }
+
+  .pvtSetting-left{
+      border-right-width: 0px;
+  }
+
+  .pvtSetting-right{
+      border-left-width: 0px;
+  }
+
+.pvtSettingButton{
+      background-color:#66676799;
+      border: 1px solid transparent;
+      color: white;
+      vertical-align: middle;
+      /* border: transparent; */
+      /* margin: 0 5px 0 5px; */
+      font-weight: 700;
+      border-radius: 5px;
+      padding: 5px;
+      /* margin: 5px; */
+  }
+
+.pvtButton.primary{
+    background-color: #3f4f75;
+    color: white;
+}
+
