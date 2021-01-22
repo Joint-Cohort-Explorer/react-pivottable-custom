@@ -612,6 +612,10 @@ class PivotData {
       // this.props.attrGroups[group] = {attr:true}
       let inFilteredValue = 0;
       const groupedAttrsNum = Object.keys(this.props.attrGroups[group]).length;
+      // console.log(group, groupedAttrsNum)
+      if (groupedAttrsNum === 0){
+        continue;
+      }
       for (const attrName in this.props.attrGroups[group]){
         // console.log('in test group', record[attrName])
         groupedValue[attrName] = true;
@@ -620,7 +624,7 @@ class PivotData {
         }
       }
 
-      if(groupedAttrsNum > 0 && inFilteredValue === groupedAttrsNum){
+      if(inFilteredValue === groupedAttrsNum){
         return false;
       }
     }
