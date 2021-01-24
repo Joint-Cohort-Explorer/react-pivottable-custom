@@ -22,6 +22,8 @@ Please see [https://github.com/plotly/react-pivottable#readme](https://github.co
 ### 10. Customized styling without third-party library
 ### 11. Support multiple queries for value in filters and query by expression
 ### 12. Add module to config "OR groups"
+    - 12.1 Set label color for different 'OR' groups
+    - 12.2 Change the place of all ungrouped attributes
 
 ## Usage 
 ### Configure categories for attributes
