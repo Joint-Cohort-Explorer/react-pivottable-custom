@@ -621,6 +621,11 @@ class PivotData {
         }
         for (const k in criteria) {
           const v = criteria[k];
+          if (!v){
+            continue;
+          }
+          // console.log(v);
+          // console.log(record);
           if (v !== (k in record ? record[k] : 'null')) {
             return;
           }
