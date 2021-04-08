@@ -334,7 +334,7 @@ export class CategoryCard extends React.Component {
     this.state = {
       open: this.props.defaultOpen,
 	  // Bump up to 500 AGB
-      showAttrNums: this.props.showAttrNums || 500,
+      showAttrNums: 10000,
       showMenu: false,
       mouseOver: false,
       selectCategory: {},
@@ -520,7 +520,7 @@ export class CategoryCard extends React.Component {
                </span>): ""
              }
 
-            <input className= 'attr-num-input' type='number' min = {0} defaultValue={500} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} />
+            {/* <input className= 'attr-num-input' type='number' min = {0} defaultValue={500} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} /> */}
      </div>)
   }
 
