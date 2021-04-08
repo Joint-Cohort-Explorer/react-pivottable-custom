@@ -287,6 +287,7 @@ table.pvtTable tbody tr td:active {
     border-color: #c8d4e3;
     font-size: 14px;
     margin: 3px;
+    cursor: pointer;
     transition: 0.34s all cubic-bezier(0.19, 1, 0.22, 1);
     text-decoration: none !important;
 }
@@ -357,7 +358,7 @@ table.pvtTable tbody tr td:active {
     margin: 0;
     margin-bottom: 1px;
     padding: 3px;
-    cursor: default;
+    cursor: pointer;
 }
 
 .pvtCheckContainer p.selected {
@@ -372,6 +373,11 @@ table.pvtTable tbody tr td:active {
     padding-left: 5px;
     cursor: pointer;
 }
+
+.pvtOnly:hover{
+    color: #000000;
+    font-weight: bolder;
+} 
 
 .pvtOnlySpacer {
     display: block;
@@ -567,6 +573,15 @@ table.pvtTable tbody tr td:active {
     font-size:  14px;
  }
  
+
+
+/*
+Search Icon
+*/
+
+.icon-search {
+    cursor: pointer;
+}
 
 /*
 Dropdown Menu - Bootstrap
@@ -819,6 +834,7 @@ Dropdown Menu - Bootstrap
       border: 1px solid transparent;
       color: white;
       vertical-align: middle;
+      cursor: pointer;
       /* border: transparent; */
       /* margin: 0 5px 0 5px; */
       font-weight: 700;
