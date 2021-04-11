@@ -1,11 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
-import {PivotData, sortAs, getSort, getAllAttributes} from './Utilities';
+import {PivotData, sortAs, getSort, getAllAttributes, naturalSort} from './Utilities';
 import PivotTable from './PivotTable';
 import Sortable from 'react-sortablejs';
 import Draggable from 'react-draggable';
+import ConfigModal, {UngroupedAttrs} from './PivotTableModal';
 
+const colors = [
+  "#ECF5FF",
+  "#D2E9FF",
+  "#C4E1FF",
+  "#ACD6FF",
+  "#97CBFF",
+  "84C1FF",
+  "ECFFFF",
+]
 /* eslint-disable react/prop-types */
 // eslint can't see inherited propTypes!
 
@@ -24,10 +34,34 @@ export class DraggableAttribute extends React.Component {
   }
 
   matchesFilter(x) {
-    return x
-      .toLowerCase()
-      .trim()
-      .includes(this.state.filterText.toLowerCase().trim());
+    // change to multiple conditions
+    const allowedSigns = ['>', '<', '=']
+    const filterText = this.state.filterText.toLowerCase().trim();
+    const conditions = filterText.split(',');
+    const containSign = allowedSigns.findIndex(sign=>filterText.includes(sign)) !== -1;
+    let equation="";
+    if(containSign){
+        try {
+          if(typeof x === "string"){
+            x = x.toLowerCase();
+            // try to convert to number
+            // console.log(x)
+            if(!isNaN(x)){
+              x = parseFloat(x, 10);
+            }
+          }
+            equation = eval(filterText)
+            // console.log(x, filterText, equation)
+          }catch(e){
+            // console.log(e)
+            // ignore error
+        };
+    }
+    // return x
+    //   .toLowerCase()
+    //   .trim()
+    //   .includes(this.state.filterText.toLowerCase().trim());
+    return equation && equation !== "" ? equation: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1;
   }
 
   selectOnly(e, value) {
@@ -178,6 +212,8 @@ export class DraggableAttribute extends React.Component {
     visibility: this.state.hover ? 'visible': 'hidden'
   };
 
+  const attrSpanStyle =  this.props.attrColor || {};
+
     return (
       !this.props.searchDropDown ? ( <li data-id={this.props.name}
         onMouseOver={this.handleMouseOver.bind(this)}
@@ -186,11 +222,12 @@ export class DraggableAttribute extends React.Component {
         onMouseDown = {()=>{this.setState({hover: false})}}
         onMouseUp={()=>{this.setState({hover: false})}}
       >
-        <span className={'pvtAttr tooltip ' + filtered}>
+        <span className={'pvtAttr tooltip ' + filtered} style={attrSpanStyle}>
           {this.props.name}
           <span
             className="pvtTriangle"
             onClick={this.toggleFilterBox.bind(this)}
+            style = {attrSpanStyle}
           >
             {' '}
             ▾
@@ -205,10 +242,10 @@ export class DraggableAttribute extends React.Component {
 
         {this.state.open ? this.getFilterBox() : null}
         </li>) : (<div style={{position: "relative"}}>
-        <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
-                    <SearchButton/>
-          </span>
-        {this.state.open ? this.getFilterBox() : null}
+                  <span style={{float: "right"}} onClick={this.toggleFilterBox.bind(this)}>
+                              <SearchButton/>
+                    </span>
+                  {this.state.open ? this.getFilterBox() : null}
          
           
           
@@ -237,7 +274,7 @@ DraggableAttribute.propTypes = {
 class SearchButton extends React.PureComponent{
   render(){
     const size = this.props.size || "30px"
-    return(<svg width={size} height={size} viewBox="0 0 16 16" className="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    return(<svg width={size} height={size} viewBox="0 0 16 16" className="icon-search bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path fillRule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
     <path fillRule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
   </svg>)
@@ -297,7 +334,6 @@ export class CategoryCard extends React.Component {
     this.state = {
       open: this.props.defaultOpen,
       showAttrNums: 10000,
-      attrOrder: {},
       showMenu: false,
       mouseOver: false,
       selectCategory: {},
@@ -318,24 +354,36 @@ export class CategoryCard extends React.Component {
   }
 
  
+ 
 
   makeCateogryDnDCell(attrDict, level){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
     // const name = attrDict.name;
-    const key = `${level}-${attrDict.name}`;
+    // const key = `${level}-${attrDict.name}`;
     // const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
+
+    const key = attrDict.name; // assume no duplicate;
     const curAttributes = attrDict.attributes;
     const new_attrs = curAttributes && curAttributes.length > 0 ?
-                      curAttributes.filter(findAttr).sort(sortAs(this.state.attrOrder[key] || this.props.attrOrder)).slice(0, this.state.showAttrNums)
+                      curAttributes.filter(findAttr).sort(sortAs(this.props.attrOrder || naturalSort)).slice(0, this.state.showAttrNums)
                       : [];
 
+    // const onChangeAttr = (key) => (
+    //   order => {
+    //     const newOrders = Object.assign({}, this.state.attrOrder);
+    //     newOrders[key] = order
+    //     this.setState({attrOrder: newOrders})
+    //   }
+    //   );
+    // const leastLength = this.props.attrOrder ? this.props.attrOrder.legn
     const onChangeAttr = (key) => (
-      order => {
-        const newOrders = Object.assign({}, this.state.attrOrder);
-        newOrders[key] = order
-        this.setState({attrOrder: newOrders})
+      order=>{
+        // console.log(key, order);
+        if(order && order.length >= new_attrs.length){
+          this.props.setUnusedAttrOrder(key, order);
+        }
       }
-      );
+    )
 
       const style = this.state.open ? {"width": "100%", "padding": "10px"}: {"width": "100%"};
         return (<Sortable
@@ -369,6 +417,7 @@ export class CategoryCard extends React.Component {
                               removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
                               rowHeight = {this.props.rowHeight}
+                              attrColor = {this.props.attrToGroupColor[x] || ""}
                             />
                           )):(
                           this.state.open?<span>No Attributes Here.</span>:
@@ -470,7 +519,7 @@ export class CategoryCard extends React.Component {
                </span>): ""
              }
 
-            {/* <input className= 'attr-num-input' type='number' min = {0} defaultValue={10} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} /> */}
+            {/* <input className= 'attr-num-input' type='number' min = {0} defaultValue={500} onChange = {(e)=>{this.setState({showAttrNums: e.target.value})}} /> */}
      </div>)
   }
 
@@ -542,13 +591,15 @@ class PivotTableUI extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      unusedOrder: this.props.attrOrder,
+      // unusedAttrOrder: this.props.attrOrder,
+      unusedAttrOrder: {},
       classifiedUnusedOrder: {},
       zIndices: {},
       maxZIndex: 1000,
       openDropdown: false,
       attrValues: {},
       materializedInput: [],
+      showConfig: false,
     };
     this.unusedRowRef = React.createRef();
   }
@@ -558,6 +609,7 @@ class PivotTableUI extends React.PureComponent {
   }
 
   componentDidUpdate() {
+   
     this.materializeInput(this.props.data);
   }
 
@@ -602,8 +654,138 @@ class PivotTableUI extends React.PureComponent {
   }
 
   propUpdater(key) {
-    return value => this.sendPropUpdate({[key]: {$set: value}});
+   
+    return value => {
+      // console.log('propUpdater', key, value);
+      this.sendPropUpdate({[key]: {$set: value}});
+    }
   }
+
+  setUnusedAttrOrder(key, order){
+    // console.log(key, order);
+
+    const newAttrOrder = Object.assign({}, this.state.unusedAttrOrder);
+    const newOrder = order.slice(0) || [];
+    const origOrder = newAttrOrder[key] || [];
+
+    const notInNewOrder = origOrder.filter(item=>order.findIndex(newItem=>String(newItem).toLowerCase() === String(item).toLowerCase()) === -1)
+    // const newOrder = order.push.apply(order, notInNewOrder);
+    // console.log(newOrder, notInNewOrder);
+    newOrder.push.apply(newOrder, notInNewOrder);
+    newAttrOrder[key] = newOrder;
+    this.setState({unusedAttrOrder: newAttrOrder});
+  }
+
+  
+
+  setGroupValue(group, valueObject, origGroup, groupStyle){
+    const nums = this.props.attrGroups? Object.keys(this.props.attrGroups).length : 0;
+    if(!group || group === ""){
+      group = `group-${nums + 1}`;
+      
+    }
+    // add a color to new group
+    const newAttrGroupColors = Object.assign({}, this.props.attrGroupsColor);
+    const origColor = (origGroup && origGroup !== {}) ? newAttrGroupColors[origGroup] : undefined;
+    if (origColor && origColor !== undefined){
+      delete newAttrGroupColors[origGroup];
+    }
+
+    if(!this.props.attrGroups[group] || (!newAttrGroupColors[group])){
+      newAttrGroupColors[group] = origColor && origColor !== undefined? origColor: (groupStyle || {
+        backgoundColor: colors[nums % colors.length],
+        color: "#506784"
+      });
+    }
+
+    // change colors
+    if(origColor && groupStyle && origColor !== groupStyle){
+      newAttrGroupColors[group] = groupStyle;
+    }
+
+    const newAttrToGroup = Object.assign({}, this.props.attrToGroups);
+    if(this.props.attrGroups[group]){
+      Object.keys(this.props.attrGroups[group]).forEach(key=>{
+        delete newAttrToGroup[key];
+      })
+    }
+
+    Object.keys(valueObject).forEach(key=>{
+      newAttrToGroup[key] = group;
+    })
+
+    if(origGroup && origGroup !== "" 
+      && this.props.attrGroups 
+      && origGroup in this.props.attrGroups 
+      && origGroup !== group){
+      const newAttrGroups = Object.assign({}, this.props.attrGroups);
+      delete newAttrGroups[origGroup];
+      if(Object.keys(valueObject).length > 0){
+        newAttrGroups[group] = valueObject;
+      }
+      this.sendPropUpdate({
+        attrGroups:{
+          $set: newAttrGroups
+        },
+        attrToGroups: {
+          $set: newAttrToGroup
+        },
+        attrGroupsColor: {
+          $set:  newAttrGroupColors
+        }
+        // attrToGroups:
+      });
+    } else {
+      this.sendPropUpdate({
+        attrGroups:{
+          [group]:{
+            $set: valueObject
+          }
+        },
+        attrToGroups: {
+          $set: newAttrToGroup
+        },
+        attrGroupsColor: {
+          $set:  newAttrGroupColors
+        }
+      });
+    }
+  }
+
+
+  deleteGroupValue(group){
+    const newAttrGroupColors = Object.assign({}, this.props.attrGroupsColor);
+    if(newAttrGroupColors[group]){
+      delete newAttrGroupColors[group];
+    }
+
+    const newAttrGroups = Object.assign({}, this.props.attrGroups);
+    const curAttrs = this.props.attrGroups[group];
+    const newAttrToGroup = Object.assign({}, this.props.attrToGroups);
+    Object.keys(curAttrs).forEach(attr=>{
+      if(newAttrToGroup[attr]){
+        delete newAttrToGroup[attr];
+      }
+    });
+    // console.log(newAttrGroups[group])
+    if(newAttrGroups[group]){
+      delete newAttrGroups[group];
+    }
+
+    this.sendPropUpdate({
+      attrGroups: {
+        $set: newAttrGroups,
+      },
+      attrToGroups: {
+        $set: newAttrToGroup
+      },
+      attrGroupsColor: {
+        $set:  newAttrGroupColors
+      }
+    });
+  }
+
+
 
   setValuesInFilter(attribute, values) {
     this.sendPropUpdate({
@@ -618,6 +800,7 @@ class PivotTableUI extends React.PureComponent {
     });
   }
 
+
   addValuesToFilter(attribute, values) {
     if (attribute in this.props.valueFilter) {
       this.sendPropUpdate({
@@ -631,7 +814,6 @@ class PivotTableUI extends React.PureComponent {
     } else {
       this.setValuesInFilter(attribute, values);
     }
-    // console.log(this.props.valueFilter)
   }
 
   removeValuesFromFilter(attribute, values) {
@@ -654,9 +836,20 @@ class PivotTableUI extends React.PureComponent {
     return this.state.openDropdown === dropdown;
   }
   
+  closeConfigModal(){
+    this.setState({showConfig: false});
+  }
 
+  showConfigModal(){
+    this.setState({showConfig: true});
+  }
+
+  toggleConfigModal(){
+    this.setState({showConfig: !this.state.showConfig});
+  }
 
   makeClassifiedDnDCell(items, classes) {
+
 
     const filterAttrs = Object.keys(this.props.valueFilter[this.props.searchName] || {});
     const remainAttributes = filterAttrs.length === 0? 
@@ -670,9 +863,9 @@ class PivotTableUI extends React.PureComponent {
 
     const rowHeight = this.unusedRowRef.current ? this.unusedRowRef.current.clientHeight : 0;
     const classfiedAttrs = attrList.reduce((prev, cur)=>{
-      prev.push.apply(prev, getAllAttributes(cur))
-      return prev;
-},[]);
+          prev.push.apply(prev, getAllAttributes(cur))
+          return prev;
+    },[]);
     const findUnclassfiedAttr = (x) => (classfiedAttrs.findIndex(y=>y.toLowerCase() === x.toLowerCase()) ===-1);
     const unclassfiedAttrs = remainAttributes.filter(findUnclassfiedAttr);
     // const newAttrList = attrList.slice(0);
@@ -682,11 +875,18 @@ class PivotTableUI extends React.PureComponent {
         attributes: unclassfiedAttrs
       })
     }
+    // attrGroupsColor: {},
+    // attrToGroups: {},
+    const attrToGroupColor  = {};
+    for (const [attr, group] of Object.entries(this.props.attrToGroups)){
+      attrToGroupColor[attr] = this.props.attrGroupsColor[group];
+    }
 
 return (<td className={classes + " pvtCategoryArea"}>
   <div className="pvtCategoryContainer">
   {
     attrList.map((attrDict, i)=>{
+
       return(<CategoryCard
         key = {attrDict.name}
         attrDict = {attrDict}
@@ -696,18 +896,20 @@ return (<td className={classes + " pvtCategoryArea"}>
         attrLabel = {this.props.attrLabel}
         // unclassifiedAttrName = {this.props.unclassifiedAttrName}
         // categoryLevel = {1}
-        attrOrder = {this.props.attrOrder}
+        attrOrder = {this.state.unusedAttrOrder[attrDict.name] || this.props.attrOrder || []}
         attrValues={this.state.attrValues}
         rowHeight = {rowHeight}
         valueFilter={this.props.valueFilter || {}}
         sorter={this.props.sorters}
         menuLimit={this.props.menuLimit}
         setValuesInFilter={this.setValuesInFilter.bind(this)}
+        setUnusedAttrOrder = {this.setUnusedAttrOrder.bind(this)}
         addValuesToFilter={this.addValuesToFilter.bind(this)}
         moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
         removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
         zIndices = {this.state.zIndices}
         maxZIndex = {this.state.maxZIndex} 
+        attrToGroupColor = {attrToGroupColor}
     />
       )
     })
@@ -716,30 +918,7 @@ return (<td className={classes + " pvtCategoryArea"}>
 </td>
   
 )
-
-    
-  //     return ( <AttributesArea
-  //       attrList = {attrList}
-  //       classes = {classes}
-  //       allAttributes = {remainAttributes}
-  //       unclassifiedAttrName = {this.props.unclassifiedAttrName}
-  //       categoryLevel = {this.props.categoryLevel || this.props.maxCategoryLevel}
-  //       attrOrder = {this.props.attrOrder}
-  //       attrValues={this.state.attrValues}
-  //       rowHeight = {rowHeight}
-  //       valueFilter={this.props.valueFilter || {}}
-  //       sorter={this.props.sorters}
-  //       menuLimit={this.props.menuLimit}
-  //       setValuesInFilter={this.setValuesInFilter.bind(this)}
-  //       addValuesToFilter={this.addValuesToFilter.bind(this)}
-  //       moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
-  //       removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
-  //       zIndices = {this.state.zIndices}
-  //       maxZIndex = {this.state.maxZIndex} 
-  //   />)
-  
-  // }
-  }
+}
 
   makeDnDCell(items, onChange, classes) {
     const filterAttrs = Object.keys(this.props.valueFilter["Select Attributes"] || {});
@@ -760,7 +939,7 @@ return (<td className={classes + " pvtCategoryArea"}>
         {remainAttributes.map(x => (
           <DraggableAttribute
             name={x}
-            label = {x} // for tests
+            label = {this.props.attrLabel[x] || ""} // for tests
             key={x}
             attrValues={this.state.attrValues[x]}
             valueFilter={this.props.valueFilter[x] || {}}
@@ -771,6 +950,7 @@ return (<td className={classes + " pvtCategoryArea"}>
             moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
             removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
             zIndex={this.state.zIndices[x] || this.state.maxZIndex}
+            attrColor = {this.props.attrToGroups[x]? this.props.attrGroupsColor[this.props.attrToGroups[x]] || "": ""}
           />
         ))}
       </Sortable>
@@ -876,7 +1056,12 @@ return (<td className={classes + " pvtCategoryArea"}>
 
     const unusedLength = unusedAttrs.reduce((r, e) => r + e.length, 0);
     const horizUnused = unusedLength < this.props.unusedOrientationCutoff;
-
+	
+	// Added pvtScroll by SAS2412 
+	// var unusedAttrsCell = this.makeDnDCell(unusedAttrs, function (order) {
+	// 	return _this8.setState({ unusedOrder: order });
+	// }, 'pvtAxisContainer pvtUnused pvtScroll ' + (horizUnused ? 'pvtHorizList' : 'pvtVertList'));
+	  
     const unusedAttrsCell = this.props.attrClassified? 
     this.makeClassifiedDnDCell(unusedAttrs,
       `pvtAxisContainer pvtUnused ${
@@ -919,6 +1104,7 @@ return (<td className={classes + " pvtCategoryArea"}>
               </td>
       </tr>
     )
+
     const resetButton = (
       <button 
       className ="btn btn-custom-primary"
@@ -934,6 +1120,14 @@ return (<td className={classes + " pvtCategoryArea"}>
         // this.sendPropUpdate({valueFilter: {$set: {}}});
       }}>Reset Filters</button>
     )
+
+    // const configButton = ( <button 
+    //   className ="btn btn-custom-primary"
+    //   onClick={this.showConfigModal.bind(this)}
+    //   >
+    //     Show Config
+    //   </button>)
+
     const rendererCell = (
       <td className="pvtRenderers">
         <Dropdown
@@ -950,10 +1144,11 @@ return (<td className={classes + " pvtCategoryArea"}>
         />
        <div className="pvtDropdown">
        <div className="pvtButtonContainer">
-        {
-          resetButton
-        }
+        {resetButton}
        </div>
+       {/* <div className="pvtButtonContainer">
+        {configButton}
+       </div> */}
        </div>
       </td>
     );
@@ -991,11 +1186,60 @@ return (<td className={classes + " pvtCategoryArea"}>
       </td>
     );
 
+    // console.log('test attrGroups', this.props.attrGroups);
+    const TableConfigModal = (
+      <td className="pvtAxisContainer pvtCategoryArea pvtSetting-right">
+        <ConfigModal
+          show = {this.state.showConfig}
+          toggleConfig = {this.toggleConfigModal.bind(this)}
+          handleOpen = {this.showConfigModal.bind(this)}
+          // handleClose = {this.closeConfigModal.bind(this)} 
+          zIndex={this.state.maxZIndex + 1}
+          groups = {this.props.attrGroups}
+          // attrToGroupColor = {this.props.attrToGroupColor}
+          attrToGroups= {this.props.attrToGroups}
+          attrGroupsColor = {this.props.attrGroupsColor}
+          setGroupValue = {this.setGroupValue.bind(this)}
+          deleteGroupValue = {this.deleteGroupValue.bind(this)}
+          values = {Object.keys(this.state.attrValues)
+          .filter(
+            e =>
+              !this.props.hiddenAttributes.includes(e) &&
+              !this.props.hiddenFromDragDrop.includes(e)
+          )}
+        />
+      </td>
+    )
+
+    const TableConfigUnused = ( 
+      <td className="pvtAxisContainer pvtSetting-left">
+        <UngroupedAttrs
+          show = {this.state.showConfig}
+          groups = {this.props.attrGroups}
+          values = {Object.keys(this.state.attrValues)
+            .filter(
+              e =>
+                !this.props.hiddenAttributes.includes(e) &&
+                !this.props.hiddenFromDragDrop.includes(e)
+            )}
+          toggleConfig = {this.toggleConfigModal.bind(this)}
+          // handleOpen = {this.showConfigModal.bind(this)}
+          // handleClose = {this.closeConfigModal.bind(this)} 
+      />
+      </td>
+      )
+
     if (horizUnused) {
       return (
-        <table className="pvtUi">
+        <div>
+       
+          <table className="pvtUi">
           <tbody onClick={() => this.setState({openDropdown: false})}>
-             {searchCells}
+             {searchCells} 
+             <tr>
+               {TableConfigUnused}
+              {TableConfigModal}
+             </tr>
             <tr ref = {this.unusedRowRef}>
               {rendererCell}
               {unusedAttrsCell}
@@ -1010,11 +1254,16 @@ return (<td className={classes + " pvtCategoryArea"}>
             </tr>
           </tbody>
         </table>
+         
+          </div>
       );
+        
     }
 
     return (
-      <table className="pvtUi">
+     <div>
+           {TableConfigModal}
+        <table className="pvtUi">
         <tbody onClick={() => this.setState({openDropdown: false})}>
           <tr>
             {rendererCell}
@@ -1028,6 +1277,8 @@ return (<td className={classes + " pvtCategoryArea"}>
           </tr>
         </tbody>
       </table>
+  
+     </div>
     );
   }
 }

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { prototype } from 'sortablejs';
 
 /*
  * decaffeinate suggestions:
@@ -603,11 +604,45 @@ class PivotData {
   }
 
   filter(record) {
+    // 1. get grouped attributes
+    // 2. filter: !A=> return false; grouped: 
+    //  for every group: !A && !B => return false
+    const groupedValue = {};
+    for (const group in this.props.attrGroups){
+      // this.props.attrGroups[group] = {attr:true}
+      let inFilteredValue = 0;
+      const groupedAttrsNum = Object.keys(this.props.attrGroups[group]).length;
+      // console.log(group, groupedAttrsNum)
+      if (groupedAttrsNum === 0){
+        continue;
+      }
+      for (const attrName in this.props.attrGroups[group]){
+        // console.log('in test group', record[attrName])
+        groupedValue[attrName] = true;
+        if(this.props.valueFilter[attrName] && record[attrName] in this.props.valueFilter[attrName]){
+          inFilteredValue++;
+        }
+      }
+
+      if(inFilteredValue === groupedAttrsNum){
+        return false;
+      }
+    }
+
+
+    // console.log('here')
+  
+
     for (const k in this.props.valueFilter) {
+      if (k in groupedValue){
+        continue;
+      }
       if (record[k] in this.props.valueFilter[k]) {
         return false;
       }
     }
+
+   
     return true;
   }
 
@@ -624,8 +659,6 @@ class PivotData {
           if (v === undefined){
             continue;
           }
-          // console.log(v);
-          // console.log(record);
           if (v !== (k in record ? record[k] : 'null')) {
             return;
           }
@@ -824,7 +857,11 @@ PivotData.defaultProps = {
   attrClassified: false,
   attrCategory: {},
   attrOrder: [],
+  // unusedAttrOrder: {},
   attrLabel: {},
+  attrGroups: {},
+  attrGroupsColor: {},
+  attrToGroups: {},
   unclassifiedAttrName: "Unclassified",
   cols: [],
   rows: [],
@@ -844,6 +881,10 @@ PivotData.propTypes = {
   unclassifiedAttrName: PropTypes.string,
   attrCategory: PropTypes.arrayOf(PropTypes.object),
   attrOrder: PropTypes.arrayOf(PropTypes.string),
+  attrGroups: PropTypes.objectOf(PropTypes.objectOf(PropTypes.bool)),
+  attrGroupsColor: PropTypes.objectOf(PropTypes.object),
+  attrToGroups: PropTypes.objectOf(PropTypes.string),
+  // unusedAttrOrder: PropTypes.objectOf(PropTypes.array),
   attrLabel: PropTypes.objectOf(PropTypes.string),
   aggregatorName: PropTypes.string,
   cols: PropTypes.arrayOf(PropTypes.string),

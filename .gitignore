@@ -16,3 +16,6 @@ package-lock.json
 /Utilities.js.map
 /__tests__/*
 /pivottable.css
+
+/examples/test-data-efi.js
+/examples/actual test-data-efi.js
