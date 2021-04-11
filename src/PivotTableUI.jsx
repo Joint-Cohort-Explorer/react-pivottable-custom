@@ -333,7 +333,6 @@ export class CategoryCard extends React.Component {
     super(props);
     this.state = {
       open: this.props.defaultOpen,
-	  // Bump up to 500 AGB
       showAttrNums: 10000,
       showMenu: false,
       mouseOver: false,
