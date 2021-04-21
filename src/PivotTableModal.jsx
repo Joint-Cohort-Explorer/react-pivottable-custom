@@ -6,13 +6,17 @@ import "react-colorful/dist/index.css";
 // import Draggable from 'react-draggable';
 
 const colors = [
-  "#ECF5FF",
-  "#D2E9FF",
-  "#C4E1FF",
-  "#ACD6FF",
-  "#97CBFF",
-  "84C1FF",
-  "ECFFFF",
+  "#00306F",
+  "#00489E",
+  "#005FCC",
+  "#0079FA",
+  "#009FFA",
+  "#00C2F9",
+  "#00E5F8",
+  "#004002",
+  "#005A01",
+  "#007702",
+  "#009503"
 ]
 
 function getUngroupedValues(allValues, groups){
@@ -434,7 +438,7 @@ export default class ConfigModal extends React.Component{
           }}
         tag="div"
         style = {{paddingBottom: "20px"}}
-        onChange={(order,sortable,evt) => {
+        onChange={(order) => {
           this.setState({fakeVals: order});
           this.state.fakeVals.forEach(item=>{
                             valueAsObject[item] = true;
@@ -445,9 +449,10 @@ export default class ConfigModal extends React.Component{
             selectValues: valueAsObject,
             groupStyle: {
               backgroundColor:  colors[nums % colors.length],
-              color: "#506784"
+              color: "white"
             },
             });
+            console.log(order)
             this.saveGroup()
           }}
         >
@@ -585,7 +590,7 @@ export default class ConfigModal extends React.Component{
                       alterGroupName: defaultName, selectValues:{}, 
                       groupStyle: {
                         backgroundColor:  colors[nums % colors.length],
-                        color: "#506784"
+                        color: "white"
                       },
                     showEditAttr: false,
                     showColorPicker: false
@@ -597,6 +602,10 @@ export default class ConfigModal extends React.Component{
           {this.props.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
                 {!this.state.open && this.fakeSortable()}
+                {!this.state.open && Object.keys(this.props.groups).length === 0 && 
+                  <div style = {{textAlign: "center", color: "#666767de"}}>
+                    Drag attribute above to create group
+                  </div>}
                 {this.state.open && this.getFilterBox()}
             </div>)}
       </div>
