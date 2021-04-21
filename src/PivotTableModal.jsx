@@ -433,23 +433,23 @@ export default class ConfigModal extends React.Component{
             preventOnFilter: false,
           }}
         tag="div"
+        style = {{paddingBottom: "20px"}}
         onChange={(order,sortable,evt) => {
           this.setState({fakeVals: order});
           this.state.fakeVals.forEach(item=>{
                             valueAsObject[item] = true;
-                            console.log(item);
                         });
           this.setState({open: true, 
-          selectGroup: "", 
-          alterGroupName: defaultName, 
-          selectValues: valueAsObject,
-          groupStyle: {
-            backgroundColor:  colors[nums % colors.length],
-            color: "#506784"
-          },
-          
-        });
-        this.saveGroup()}}
+            selectGroup: "", 
+            alterGroupName: defaultName, 
+            selectValues: valueAsObject,
+            groupStyle: {
+              backgroundColor:  colors[nums % colors.length],
+              color: "#506784"
+            },
+            });
+            this.saveGroup()
+          }}
         >
         </Sortable>
       )
@@ -469,6 +469,9 @@ export default class ConfigModal extends React.Component{
           const newValues = {};
           order.forEach(attr=>newValues[attr]= true);
           this.props.setGroupValue(groupName, newValues, "");
+          if (Object.keys(newValues).length === 0){
+            this.props.deleteGroupValue(groupName)
+          }
         }
         return(<div key= {groupName} className="modal-group-div">
 
