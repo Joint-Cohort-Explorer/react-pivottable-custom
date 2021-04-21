@@ -120,6 +120,7 @@ export default class ConfigModal extends React.Component{
             errors: {},
             ungroupedValues: [],
             showEditAttr: false,
+            fakeVals: []
         };
     }
 
@@ -413,6 +414,47 @@ export default class ConfigModal extends React.Component{
     </Sortable>)
     }
     
+    fakeSortable(){
+      // const onChange =  
+      const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
+      const defaultName = `group-${groupNum + 1}`;
+      const nums = this.props.groups ? Object.keys(this.props.groups).length : 0;
+      const valueAsObject = {};
+      const test = (l) => {
+        this.setState({fakeVals: l})
+      }
+      return(
+        <Sortable
+          key = {"no Group"}
+          options={{
+            group: 'group-attrs',
+            ghostClass: 'pvtPlaceholder',
+            filter: '.pvtFilterBox',
+            preventOnFilter: false,
+          }}
+        tag="div"
+        onChange={(order,sortable,evt) => {
+          this.setState({fakeVals: order});
+          this.state.fakeVals.forEach(item=>{
+                            valueAsObject[item] = true;
+                            console.log(item);
+                        });
+          this.setState({open: true, 
+          selectGroup: "", 
+          alterGroupName: defaultName, 
+          selectValues: valueAsObject,
+          groupStyle: {
+            backgroundColor:  colors[nums % colors.length],
+            color: "#506784"
+          },
+          
+        });
+        this.saveGroup()}}
+        >
+        </Sortable>
+      )
+
+    }
     renderGroupDetails(groupName, groupAttrObject){
         // const groupValues = Object.keys(groupAttrObject).reduce(res, item=>{
         //     if(groupAttrObject[item] === true){
@@ -551,6 +593,7 @@ export default class ConfigModal extends React.Component{
           </div>
           {this.props.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
+                {!this.state.open && this.fakeSortable()}
                 {this.state.open && this.getFilterBox()}
             </div>)}
       </div>
