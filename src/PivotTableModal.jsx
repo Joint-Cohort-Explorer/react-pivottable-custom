@@ -6,13 +6,17 @@ import "react-colorful/dist/index.css";
 // import Draggable from 'react-draggable';
 
 const colors = [
-  "#ECF5FF",
-  "#D2E9FF",
-  "#C4E1FF",
-  "#ACD6FF",
-  "#97CBFF",
-  "84C1FF",
-  "ECFFFF",
+  "#00306F",
+  "#005FCC",
+  "#00489E",
+  "#004002",
+  "#0079FA",
+  "#009FFA",
+  "#00C2F9",
+  "#00E5F8",
+  "#005A01",
+  "#007702",
+  "#009503"
 ]
 
 function getUngroupedValues(allValues, groups){
@@ -120,6 +124,7 @@ export default class ConfigModal extends React.Component{
             errors: {},
             ungroupedValues: [],
             showEditAttr: false,
+            fakeVals: []
         };
     }
 
@@ -413,6 +418,48 @@ export default class ConfigModal extends React.Component{
     </Sortable>)
     }
     
+    fakeSortable(){
+      // const onChange =  
+      const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
+      const defaultName = `group-${groupNum + 1}`;
+      const nums = this.props.groups ? Object.keys(this.props.groups).length : 0;
+      const valueAsObject = {};
+      const test = (l) => {
+        this.setState({fakeVals: l})
+      }
+      return(
+        <Sortable
+          key = {"no Group"}
+          options={{
+            group: 'group-attrs',
+            ghostClass: 'pvtPlaceholder',
+            filter: '.pvtFilterBox',
+            preventOnFilter: false,
+          }}
+        tag="div"
+        style = {{paddingBottom: "20px"}}
+        onChange={(order) => {
+          this.setState({fakeVals: order});
+          this.state.fakeVals.forEach(item=>{
+                            valueAsObject[item] = true;
+                        });
+          this.setState({open: true, 
+            selectGroup: "", 
+            alterGroupName: defaultName, 
+            selectValues: valueAsObject,
+            groupStyle: {
+              backgroundColor:  colors[nums % colors.length],
+              color: "white"
+            },
+            });
+            console.log(order)
+            this.saveGroup()
+          }}
+        >
+        </Sortable>
+      )
+
+    }
     renderGroupDetails(groupName, groupAttrObject){
         // const groupValues = Object.keys(groupAttrObject).reduce(res, item=>{
         //     if(groupAttrObject[item] === true){
@@ -427,6 +474,9 @@ export default class ConfigModal extends React.Component{
           const newValues = {};
           order.forEach(attr=>newValues[attr]= true);
           this.props.setGroupValue(groupName, newValues, "");
+          if (Object.keys(newValues).length === 0){
+            this.props.deleteGroupValue(groupName)
+          }
         }
         return(<div key= {groupName} className="modal-group-div">
 
@@ -540,7 +590,7 @@ export default class ConfigModal extends React.Component{
                       alterGroupName: defaultName, selectValues:{}, 
                       groupStyle: {
                         backgroundColor:  colors[nums % colors.length],
-                        color: "#506784"
+                        color: "white"
                       },
                     showEditAttr: false,
                     showColorPicker: false
@@ -551,6 +601,11 @@ export default class ConfigModal extends React.Component{
           </div>
           {this.props.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
+                {!this.state.open && this.fakeSortable()}
+                {!this.state.open && Object.keys(this.props.groups).length === 0 && 
+                  <div style = {{textAlign: "center", color: "#666767de"}}>
+                    Drag attribute above to create group
+                  </div>}
                 {this.state.open && this.getFilterBox()}
             </div>)}
       </div>
