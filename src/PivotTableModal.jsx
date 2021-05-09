@@ -7,15 +7,15 @@ import "react-colorful/dist/index.css";
 
 const colors = [
   "#00306F",
+  "#929084",
+  "#FFC857", 
+  "#A997DF", 
+  "#E5323B", 
   "#005FCC",
-  "#00489E",
   "#004002",
   "#0079FA",
-  "#009FFA",
   "#00C2F9",
-  "#00E5F8",
   "#005A01",
-  "#007702",
   "#009503"
 ]
 
@@ -418,7 +418,7 @@ export default class ConfigModal extends React.Component{
     </Sortable>)
     }
     
-    fakeSortable(){
+    fakeSortable(paddingSize){
       // const onChange =  
       const groupNum = this.props.groups? Object.keys(this.props.groups).length : 0;
       const defaultName = `group-${groupNum + 1}`;
@@ -437,7 +437,7 @@ export default class ConfigModal extends React.Component{
             preventOnFilter: false,
           }}
         tag="div"
-        style = {{paddingBottom: "20px"}}
+        style = {{paddingBottom: paddingSize}}
         onChange={(order) => {
           this.setState({fakeVals: order});
           this.state.fakeVals.forEach(item=>{
@@ -569,7 +569,7 @@ export default class ConfigModal extends React.Component{
               {/* Set OR Groups {this.state.open? ": Edit A Group" : ""} */}
             </div>
 
-            {this.props.show && (<div
+            {/* {this.props.show && (<div
             // className="dropdown dropleft"
               style={{float: "right", display: "inline-block"}}
             >
@@ -597,15 +597,21 @@ export default class ConfigModal extends React.Component{
               })
          }}>Add New Group</button>)}
 
-            </div>)}
+            </div>)} */}
           </div>
           {this.props.show && (  <div className="card-body"> {/* className="modal-content" */}
                 {!this.state.open && this.renderGroups()}
-                {!this.state.open && this.fakeSortable()}
+                {!this.state.open && Object.keys(this.props.groups).length === 0 && this.fakeSortable("60px")}
+                {!this.state.open && Object.keys(this.props.groups).length === 1 && this.fakeSortable("40px")}
+                {!this.state.open && Object.keys(this.props.groups).length > 1 && this.fakeSortable("20px")}
                 {!this.state.open && Object.keys(this.props.groups).length === 0 && 
                   <div style = {{textAlign: "center", color: "#666767de"}}>
                     Drag attribute above to create group
                   </div>}
+                {!this.state.open && Object.keys(this.props.groups).length === 1 && 
+                <div style = {{textAlign: "center", color: "#666767de"}}>
+                  Drag new attribute below group above to create another group
+                </div>}
                 {this.state.open && this.getFilterBox()}
             </div>)}
       </div>
