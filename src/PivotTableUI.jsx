@@ -37,15 +37,18 @@ export class DraggableAttribute extends React.Component {
     // change to multiple conditions
     const allowedSigns = ['>', '<', '=']
     const filterText = this.state.filterText.toLowerCase().trim();
+    if (filterText === "") {
+      return true;
+    }
     const conditions = filterText.split(',');
     const containSign = allowedSigns.findIndex(sign=>filterText.includes(sign)) !== -1;
     let equation="";
+    let xIsNumber = false;
     if(containSign){
         try {
           if(typeof x === "string"){
             x = x.toLowerCase();
             // try to convert to number
-            // console.log(x)
             if(!isNaN(x)){
               x = parseFloat(x, 10);
             }
@@ -53,15 +56,37 @@ export class DraggableAttribute extends React.Component {
             equation = eval(filterText)
             // console.log(x, filterText, equation)
           }catch(e){
-            // console.log(e)
             // ignore error
         };
+    } else {
+      let xInNumber;
+      if (!isNaN(x)) {
+        xInNumber = parseFloat(x);
+        xIsNumber = true;
+      }
+      if (xIsNumber) {
+          const accurancy = 10000;
+          for (var i = 0; i < conditions.length; i++) {
+            var cond = conditions[i];
+            if (typeof cond === "string") {
+              if (!isNaN(cond)) {
+                cond = parseFloat(cond);
+              }
+            }
+            if (Math.round(cond * accurancy) == Math.round(xInNumber * accurancy)) {
+              return true
+            }
+        }
+      }
     }
+
     // return x
     //   .toLowerCase()
     //   .trim()
     //   .includes(this.state.filterText.toLowerCase().trim());
-    return equation && equation !== "" ? equation: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1;
+    return equation && equation !== "" ? equation: (
+      xIsNumber? false: conditions.findIndex(cond=>String(x).toLowerCase().trim().includes(cond.trim())) !== -1
+      );
   }
 
   selectOnly(e, value) {
