@@ -22,7 +22,11 @@ const colors = [
 export class DraggableAttribute extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {open: false, filterText: '', curHeight: 0, hover:false};
+    this.state = {open: false, 
+       filterText: '',
+       curHeight: 0, 
+       listPage: 0,
+       hover:false};
   }
 
   toggleValue(value) {
@@ -98,19 +102,24 @@ export class DraggableAttribute extends React.Component {
   }
 
   getFilterBox() {
-    const showMenu =
-      Object.keys(this.props.attrValues).length < this.props.menuLimit;
+    // const showMenu =
+    //   Object.keys(this.props.attrValues).length < this.props.menuLimit;
 
     const values = Object.keys(this.props.attrValues);
-    const shown = values
+    const allShown = values
       .filter(this.matchesFilter.bind(this))
       .sort(this.props.sorter);
-     
+    const startIndex = this.state.listPage * this.props.menuLimit;
+    const endIndex = startIndex + this.props.menuLimit;
+    const shown = allShown.slice(startIndex, endIndex);
+    const totalPage = Math.ceil(allShown.length/this.props.menuLimit);
+
    const divStyle = {
       display: 'block',
       cursor: 'initial',
       zIndex: this.props.zIndex,
     };
+
     if(this.props.rowHeight) {
       divStyle.top = this.props.rowHeight;
     }
@@ -129,10 +138,7 @@ export class DraggableAttribute extends React.Component {
           </a>
           <span className="pvtDragHandle">☰</span>
           <h4>{this.props.name}</h4>
-
-          {showMenu || <p>(too many values to show)</p>}
-
-          {showMenu && (
+       
             <p>
               <input
                 type="text"
@@ -152,9 +158,7 @@ export class DraggableAttribute extends React.Component {
                 onClick={() =>
                   this.props.removeValuesFromFilter(
                     this.props.name,
-                    Object.keys(this.props.attrValues).filter(
-                      this.matchesFilter.bind(this)
-                    )
+                    shown
                   )
                 }
               >
@@ -166,19 +170,14 @@ export class DraggableAttribute extends React.Component {
                 onClick={() =>
                   this.props.addValuesToFilter(
                     this.props.name,
-                    Object.keys(this.props.attrValues).filter(
-                      this.matchesFilter.bind(this)
-                    )
+                    shown
                   )
                 }
               >
                 Deselect {values.length === shown.length ? 'All' : shown.length}
               </a>
             </p>
-          )}
 
-
-          {showMenu && (
             <div className="pvtCheckContainer">
               {shown.map(x => (
                 <p
@@ -195,10 +194,26 @@ export class DraggableAttribute extends React.Component {
                 </p>
               ))}
             </div>
-          )}
+            {/* Add pagination */}
+           {(shown && allShown &&shown.length < allShown.length) && (
+              <div className="paginationButtonDiv">
+              {<a className="pageDiv"> page {this.state.listPage + 1} / {totalPage}</a>}
+              {(this.state.listPage !== 0) && (<a role="button" className="pvtButton" onClick={()=> this.paginationLeft()}>&laquo;</a>)}
+              {(endIndex <= allShown.length) && (<a role="button" className="pvtButton" onClick={()=> this.paginationRight()}>&raquo;</a>)}
+          </div>
+           )}
+
         </div>
       </Draggable>
     );
+  }
+
+  paginationLeft() {
+    this.setState({listPage: this.state.listPage - 1});
+  }
+
+  paginationRight() {
+    this.setState({listPage: this.state.listPage + 1});
   }
 
   toggleFilterBox() {

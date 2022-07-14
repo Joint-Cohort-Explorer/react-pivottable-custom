@@ -848,3 +848,23 @@ Dropdown Menu - Bootstrap
     color: white;
 }
 
+
+.paginationButtonDiv {
+    min-height: 10px;
+    margin: 3px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+.pageDiv {
+    color: #506784;
+    border-radius: 5px;
+    padding: 3px 6px;
+    background: #f2f5fa;
+    border-color: #c8d4e3;
+    font-size: 14px;
+    margin: 3px;
+    transition: 0.34s all cubic-bezier(0.19, 1, 0.22, 1);
+    text-decoration: none !important
+}
