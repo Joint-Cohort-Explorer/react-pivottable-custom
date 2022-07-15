@@ -24,6 +24,7 @@ export class DraggableAttribute extends React.Component {
     super(props);
     this.state = {open: false, 
        filterText: '',
+       isAttrPosFixed: false,
        curHeight: 0, 
        listPage: 0,
        hover:false};
@@ -241,6 +242,13 @@ export class DraggableAttribute extends React.Component {
   }
 }
 
+  toggleAttrFixedPosition() {
+    this.setState({isAttrPosFixed: !this.state.isAttrPosFixed});
+  }
+
+  releaseFixedPosition() {
+    this.setState({isAttrPosFixed: false});
+  }
 
   render() {
     const filtered =
@@ -254,13 +262,36 @@ export class DraggableAttribute extends React.Component {
 
   const attrSpanStyle =  this.props.attrColor || {};
 
+  // Config dragging hovering styles
+  let listItemFixedHeight = this.props.topFixedMargin || 200;
+  let leftFixedMargin = this.props.leftFixedMargin || 400;
+  leftFixedMargin -= 100;
+
+  const listItemFixedStyle = {
+    position: "fixed",
+    left: leftFixedMargin + "px",
+    top: listItemFixedHeight + "px",
+    zIndex: 10000,
+    display: "block",
+    cursor: "grabbing",
+    padding: 0,
+    borderRadius: "5px",
+    fontWeight: "bold",
+    fontSize: "12px",
+    boxShadow: "3px 5px 10px #909397"
+  };
+
+  const listItemStyle = this.state.isAttrPosFixed? listItemFixedStyle: {};
     return (
       !this.props.searchDropDown ? ( <li data-id={this.props.name}
+        style = {listItemStyle}
         onMouseOver={this.handleMouseOver.bind(this)}
         onMouseLeave={this.handleMouseLeave.bind(this)}
         onMouseOut = {this.handleMouseLeave.bind(this)}
         onMouseDown = {()=>{this.setState({hover: false})}}
         onMouseUp={()=>{this.setState({hover: false})}}
+        onDoubleClick={this.toggleAttrFixedPosition.bind(this)}
+        onDrag={this.releaseFixedPosition.bind(this)}
       >
         <span className={'pvtAttr tooltip ' + filtered} style={attrSpanStyle}>
           {this.props.name}
@@ -398,27 +429,14 @@ export class CategoryCard extends React.Component {
 
   makeCateogryDnDCell(attrDict, level){
     const findAttr = (x) => (this.props.allAttributes.findIndex(y=>y.toLowerCase() === x.toLowerCase()) !==-1);
-    // const name = attrDict.name;
-    // const key = `${level}-${attrDict.name}`;
-    // const curAttributes = level === this.props.categoryLevel ? this.getAllAttributes(attrDict) : attrDict.attributes;
-
     const key = attrDict.name; // assume no duplicate;
     const curAttributes = attrDict.attributes;
     const new_attrs = curAttributes && curAttributes.length > 0 ?
                       curAttributes.filter(findAttr).sort(sortAs(this.props.attrOrder || naturalSort)).slice(0, this.state.showAttrNums)
                       : [];
 
-    // const onChangeAttr = (key) => (
-    //   order => {
-    //     const newOrders = Object.assign({}, this.state.attrOrder);
-    //     newOrders[key] = order
-    //     this.setState({attrOrder: newOrders})
-    //   }
-    //   );
-    // const leastLength = this.props.attrOrder ? this.props.attrOrder.legn
     const onChangeAttr = (key) => (
       order=>{
-        // console.log(key, order);
         if(order && order.length >= new_attrs.length){
           this.props.setUnusedAttrOrder(key, order);
         }
@@ -457,6 +475,8 @@ export class CategoryCard extends React.Component {
                               removeValuesFromFilter={this.props.removeValuesFromFilter.bind(this)}
                               zIndex={this.props.zIndices[x] || this.props.maxZIndex}
                               rowHeight = {this.props.rowHeight}
+                              leftFixedMargin = {this.props.leftFixedMargin}
+                              topFixedMargin = {this.props.topFixedMargin}
                               attrColor = {this.props.attrToGroupColor[x] || ""}
                             />
                           )):(
@@ -639,9 +659,10 @@ class PivotTableUI extends React.PureComponent {
       openDropdown: false,
       attrValues: {},
       materializedInput: [],
-      showConfig: false,
+      showConfig: false
     };
     this.unusedRowRef = React.createRef();
+    this.colRenderRef = React.createRef();
   }
 
   componentDidMount() {
@@ -902,6 +923,8 @@ class PivotTableUI extends React.PureComponent {
     ]
 
     const rowHeight = this.unusedRowRef.current ? this.unusedRowRef.current.clientHeight : 0;
+    const leftFixedMargin = this.colRenderRef.current ? this.colRenderRef.current.clientWidth : 0;
+
     const classfiedAttrs = attrList.reduce((prev, cur)=>{
           prev.push.apply(prev, getAllAttributes(cur))
           return prev;
@@ -934,11 +957,10 @@ return (<td className={classes + " pvtCategoryArea"}>
         allAttributes = {remainAttributes}
         defaultOpen = {i === 0}
         attrLabel = {this.props.attrLabel}
-        // unclassifiedAttrName = {this.props.unclassifiedAttrName}
-        // categoryLevel = {1}
         attrOrder = {this.state.unusedAttrOrder[attrDict.name] || this.props.attrOrder || []}
         attrValues={this.state.attrValues}
         rowHeight = {rowHeight}
+        leftFixedMargin = {leftFixedMargin}
         valueFilter={this.props.valueFilter || {}}
         sorter={this.props.sorters}
         menuLimit={this.props.menuLimit}
@@ -964,6 +986,8 @@ return (<td className={classes + " pvtCategoryArea"}>
     const filterAttrs = Object.keys(this.props.valueFilter["Select Attributes"] || {});
     const remainAttributes = filterAttrs.length === 0? 
     items: items.filter(x=>filterAttrs.findIndex(y=>y.toLowerCase()===x.toLowerCase()) === -1);
+    const leftFixedMargin = this.colRenderRef.current ? this.colRenderRef.current.clientWidth : 0;
+
     return (
       <Sortable
         options={{
@@ -991,6 +1015,7 @@ return (<td className={classes + " pvtCategoryArea"}>
             removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
             zIndex={this.state.zIndices[x] || this.state.maxZIndex}
             attrColor = {this.props.attrToGroups[x]? this.props.attrGroupsColor[this.props.attrToGroups[x]] || "": ""}
+            leftFixedMargin = {leftFixedMargin}
           />
         ))}
       </Sortable>
@@ -1161,15 +1186,8 @@ return (<td className={classes + " pvtCategoryArea"}>
       }}>Reset Filters</button>
     )
 
-    // const configButton = ( <button 
-    //   className ="btn btn-custom-primary"
-    //   onClick={this.showConfigModal.bind(this)}
-    //   >
-    //     Show Config
-    //   </button>)
-
     const rendererCell = (
-      <td className="pvtRenderers">
+      <td className="pvtRenderers" ref={this.colRenderRef}>
         <Dropdown
           current={rendererName}
           values={Object.keys(this.props.renderers)}
