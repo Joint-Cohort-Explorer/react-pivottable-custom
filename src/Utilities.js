@@ -579,7 +579,7 @@ class PivotData {
       'prop',
       'PivotData'
     );
-
+    
     this.aggregator = this.props.aggregators[this.props.aggregatorName](
       this.props.vals
     );
@@ -588,10 +588,20 @@ class PivotData {
     this.colKeys = [];
     this.rowTotals = {};
     this.colTotals = {};
+    this.filteredRecords = {};
+    this.attrValues = {};
     this.allTotal = this.aggregator(this, [], []);
     this.sorted = false;
-
+    
     // iterate through input, accumulating data for cells
+    PivotData.forEachRecord(
+      this.props.data,
+      this.props.derivedAttributes,
+      record => {
+        this.filter(record)
+      }
+    );
+
     PivotData.forEachRecord(
       this.props.data,
       this.props.derivedAttributes,
@@ -629,9 +639,11 @@ class PivotData {
       }
     }
 
-
-    // console.log('here')
-  
+    if (this.props.isAndGroup){
+      if (('attribute' in this.props.valueFilter && 'value' in this.props.valueFilter) && (!(record.attribute in this.props.valueFilter.attribute) && (record.value in this.props.valueFilter.value))) {
+        this.filteredRecords[record.record_id] = true
+      }
+    }
 
     for (const k in this.props.valueFilter) {
       if (k in groupedValue){
@@ -739,7 +751,17 @@ class PivotData {
     const flatRowKey = rowKey.join(String.fromCharCode(0));
     const flatColKey = colKey.join(String.fromCharCode(0));
 
-    this.allTotal.push(record);
+    if (this.props.isAndGroup){
+      // console.log("755", this.filteredRecords)
+      if (!(record.record_id in this.filteredRecords)) {
+        this.filteredRecords[record.record_id] = true
+        this.allTotal.push(record)
+      }
+    }
+    else{
+      this.allTotal.push(record);
+    }
+    
 
     if (rowKey.length !== 0) {
       if (!this.rowTotals[flatRowKey]) {
@@ -872,6 +894,7 @@ PivotData.defaultProps = {
   rowOrder: 'key_a_to_z',
   colOrder: 'key_a_to_z',
   derivedAttributes: {},
+  isAndGroup: false,
 };
 
 PivotData.propTypes = {
@@ -898,6 +921,7 @@ PivotData.propTypes = {
   derivedAttributes: PropTypes.objectOf(PropTypes.func),
   rowOrder: PropTypes.oneOf(['key_a_to_z', 'value_a_to_z', 'value_z_to_a']),
   colOrder: PropTypes.oneOf(['key_a_to_z', 'value_a_to_z', 'value_z_to_a']),
+  isAndGroup: PropTypes.bool,
 };
 
 
