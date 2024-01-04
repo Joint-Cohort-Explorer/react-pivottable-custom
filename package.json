@@ -29,7 +29,10 @@
     "clean": "rm -rf __tests__ PivotTable.js* PivotTableUI.js* PlotlyRenderers.js* TableRenderers.js* PivotTableModal.js* Utilities.js* pivottable.css",
     "doPublish": "npm run clean && cp src/pivottable.css . && babel src --out-dir=. --source-maps --presets=env,react --plugins babel-plugin-add-module-exports && npm publish",
     "postpublish": "npm run clean",
-    "deploy": "webpack -p && mv bundle.js examples"
+    "deploy": "webpack -p && mv bundle.js examples",
+    "packageit": "cp src/pivottable.css . && babel src --out-dir=. --source-maps --presets=env,react --plugins babel-plugin-add-module-exports",
+    "build:js": "webpack --mode production",
+	  "build:js-dev": "webpack --mode development"
   },
   "repository": {
     "type": "git",
