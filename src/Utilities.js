@@ -615,13 +615,15 @@ class PivotData {
   }
 
   filterAndGroup(record){
-    if (!('attribute' in this.props.valueFilter && 'value' in this.props.valueFilter)){ return }
-    if (!(record.attribute in this.props.valueFilter.attribute) && !(record.value in this.props.valueFilter.value)){
-      if (!(record.attribute in this.wantedRecords)){
-        this.wantedRecords[record.attribute] = new Set([record.record_id])
-      }
-      else {
-        this.wantedRecords[record.attribute].add(record.record_id)
+    const andAttributes = this.props.andAttributes
+    if ('attribute' in andAttributes && 'value' in andAttributes && andAttributes.attribute && andAttributes.value){
+      if (!(record.attribute in this.props.valueFilter.attribute) && !(record.value in this.props.valueFilter.value)){
+        if (!(record.attribute in this.wantedRecords)){
+          this.wantedRecords[record.attribute] = new Set([record.record_id])
+        }
+        else {
+          this.wantedRecords[record.attribute].add(record.record_id)
+        }
       }
     }
   }

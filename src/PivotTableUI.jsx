@@ -28,6 +28,7 @@ export class DraggableAttribute extends React.Component {
       curHeight: 0,
       listPage: 0,
       hover: false,
+      andGroup: false,
     };
   }
 
@@ -101,6 +102,15 @@ export class DraggableAttribute extends React.Component {
       this.props.name,
       Object.keys(this.props.attrValues).filter(y => y !== value)
     );
+  }
+
+  toggleAndGroup(e){
+    this.setState({
+      andGroup: !this.state.andGroup
+    })
+    this.props.handleAndGroup(
+      this.props.name
+    )
   }
 
   getFilterBox() {
@@ -181,9 +191,9 @@ export class DraggableAttribute extends React.Component {
             <input 
                 type="checkbox"
                 className='pvtAndGroup'
-                checked = {this.props.isAndGroup}
+                checked = {this.state.andGroup}
                 onChange={e => 
-                  this.props.handleAndGroup()
+                  this.toggleAndGroup(e)
                 }
               />
               Create 'AND' Group
@@ -321,6 +331,7 @@ DraggableAttribute.propTypes = {
   menuLimit: PropTypes.number,
   zIndex: PropTypes.number,
   isAndGroup: PropTypes.bool,
+  andAttributes: PropTypes.object.isRequired,
   handleAndGroup: PropTypes.func.isRequired,
 };
 
@@ -470,6 +481,7 @@ export class CategoryCard extends React.Component {
           rowHeight={this.props.rowHeight}
           attrColor={this.props.attrToGroupColor[x] || ""}
           isAndGroup={this.props.isAndGroup}
+          andAttributes={this.props.andAttributes}
           handleAndGroup={this.props.handleAndGroup.bind(this)}
         />
       )) : (
@@ -655,16 +667,25 @@ class PivotTableUI extends React.PureComponent {
       attrValues: {},
       materializedInput: [],
       showConfig: false,
-      isAndGroup: false,
     };
     this.unusedRowRef = React.createRef();
   }
 
-  handleAndGroup(){
-    var currAndGroup = !this.props.isAndGroup
-    this.setState({isAndGroup: currAndGroup})
-    this.sendPropUpdate({isAndGroup: {$set: currAndGroup}})
-  };
+  handleAndGroup(attr){
+    if (attr in this.props.andAttributes){
+      this.props.andAttributes[attr] = !this.props.andAttributes[attr]
+    }
+    else{
+      this.props.andAttributes[attr] = true
+    }
+    
+    if (Object.values(this.props.andAttributes).includes(true)){
+      this.sendPropUpdate({isAndGroup: {$set: true}})
+    }
+    else{
+      this.sendPropUpdate({isAndGroup: {$set: false}})
+    }
+  }
 
   componentDidMount() {
     this.materializeInput(this.props.data);
@@ -967,6 +988,7 @@ class PivotTableUI extends React.PureComponent {
               maxZIndex={this.state.maxZIndex}
               attrToGroupColor={attrToGroupColor}
               isAndGroup={this.props.isAndGroup}
+              andAttributes={this.props.andAttributes}
               handleAndGroup={this.handleAndGroup.bind(this)}
             />
             )
@@ -1011,6 +1033,7 @@ class PivotTableUI extends React.PureComponent {
             zIndex={this.state.zIndices[x] || this.state.maxZIndex}
             attrColor={this.props.attrToGroups[x] ? this.props.attrGroupsColor[this.props.attrToGroups[x]] || "" : ""}
             isAndGroup={this.props.isAndGroup}
+            andAttributes={this.props.andAttributes}
             handleAndGroup={this.handleAndGroup.bind(this)}
           />
         ))}
@@ -1153,7 +1176,8 @@ class PivotTableUI extends React.PureComponent {
       moveFilterBoxToTop={this.moveFilterBoxToTop.bind(this)}
       removeValuesFromFilter={this.removeValuesFromFilter.bind(this)}
       zIndex={this.state.zIndices[searchName] || this.state.maxZIndex}
-      handleAndGroup={this.props.handleAndGroup}
+      handleAndGroup={this.handleAndGroup.bind(this)}
+      andAttributes = {this.props.andAttributes}
       isAndGroup={this.props.isAndGroup}
     />)
 
@@ -1356,7 +1380,8 @@ PivotTableUI.propTypes = Object.assign({}, PivotTable.propTypes, {
   menuLimit: PropTypes.number,
   maxCategoryLevel: PropTypes.number,
   categoryLevel: PropTypes.number,
-  isAndGroup: PropTypes.bool
+  isAndGroup: PropTypes.bool,
+  andAttributes: PropTypes.object,
 });
 
 PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
@@ -1367,7 +1392,8 @@ PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {
   menuLimit: 500,
   maxCategoryLevel: 3,
   categoryLevel: 2,
-  isAndGroup: false
+  isAndGroup: false,
+  andAttributes: {}
 });
 
 export default PivotTableUI;
