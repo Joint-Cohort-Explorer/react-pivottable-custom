@@ -588,19 +588,20 @@ class PivotData {
     this.colKeys = [];
     this.rowTotals = {};
     this.colTotals = {};
-    this.filteredRecords = {};
-    this.attrValues = {};
+    this.wantedRecords = {};
     this.allTotal = this.aggregator(this, [], []);
     this.sorted = false;
     
     // iterate through input, accumulating data for cells
-    PivotData.forEachRecord(
-      this.props.data,
-      this.props.derivedAttributes,
-      record => {
-        this.filter(record)
-      }
-    );
+    if (this.props.isAndGroup){
+      PivotData.forEachRecord(
+        this.props.data,
+        this.props.derivedAttributes,
+        record => {
+          this.filterAndGroup(record)
+        }
+      );
+    }
 
     PivotData.forEachRecord(
       this.props.data,
@@ -611,6 +612,18 @@ class PivotData {
         }
       }
     );
+  }
+
+  filterAndGroup(record){
+    if (!('attribute' in this.props.valueFilter && 'value' in this.props.valueFilter)){ return }
+    if (!(record.attribute in this.props.valueFilter.attribute) && !(record.value in this.props.valueFilter.value)){
+      if (!(record.attribute in this.wantedRecords)){
+        this.wantedRecords[record.attribute] = new Set([record.record_id])
+      }
+      else {
+        this.wantedRecords[record.attribute].add(record.record_id)
+      }
+    }
   }
 
   filter(record) {
@@ -636,12 +649,6 @@ class PivotData {
 
       if(inFilteredValue === groupedAttrsNum){
         return false;
-      }
-    }
-
-    if (this.props.isAndGroup){
-      if (('attribute' in this.props.valueFilter && 'value' in this.props.valueFilter) && (!(record.attribute in this.props.valueFilter.attribute) && (record.value in this.props.valueFilter.value))) {
-        this.filteredRecords[record.record_id] = true
       }
     }
 
@@ -752,10 +759,14 @@ class PivotData {
     const flatColKey = colKey.join(String.fromCharCode(0));
 
     if (this.props.isAndGroup){
-      // console.log("755", this.filteredRecords)
-      if (!(record.record_id in this.filteredRecords)) {
-        this.filteredRecords[record.record_id] = true
-        this.allTotal.push(record)
+      var filtered = false
+      for (const [attribute, set_id] of Object.entries(this.wantedRecords)){
+        if (set_id.has(record.record_id)){ continue }
+        filtered = true
+        break
+      }
+      if (!filtered) {
+        this.allTotal.push(record);
       }
     }
     else{
